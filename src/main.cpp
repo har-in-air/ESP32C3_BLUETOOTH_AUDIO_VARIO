@@ -183,9 +183,9 @@ void setup() {
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
 	dbg_println(("until you hear a low-frequency tone. Then release the button"));
-	for (int cnt = 0; cnt < 4; cnt++) {
-		dbg_println((4-cnt));
-		delay(1000);
+	for (int cnt = 0; cnt < 8; cnt++) {
+		dbg_println((8-cnt));
+		delay(500);
 		if (digitalRead(pinPCC) == 0) {
 			bWebConfigure = true;
 			break;
