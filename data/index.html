@@ -21,10 +21,10 @@
 <fieldset><legend>WiFi AP Credentials</legend>
 	<table>
 	<tr>
-	<td>SSID</td> <td><input type="text" id="ssid" name=ssid value="%SSID%"></td>
+	<td>SSID</td> <td><input type="text" id="ssid" name="ssid" value="%SSID%"></td>
 	</tr>
 	<tr>
-	<td>Password]</td> <td><input type="password" id="password" name=password value="%PASSWORD%"></td>
+	<td>Password]</td> <td><input type="password" id="password" name="password" value="%PASSWORD%"></td>
 	</tr>
 	</table>  
 </fieldset>
@@ -33,16 +33,16 @@
 <fieldset><legend>Vario</legend>
 	<table>
 	<tr>
-	<td>Climb Threshold [%CLIMB_MIN% .. %CLIMB_MAX%]</td> <td><input type="number" id="climbThreshold" name=climbThreshold min="%CLIMB_MIN%" max="%CLIMB_MAX%" value="%CLIMB_THRESHOLD%"></td>
+	<td>Climb Threshold [%CLIMB_MIN% .. %CLIMB_MAX%]</td> <td><input type="number" id="climbThreshold" name="climbThreshold" min="%CLIMB_MIN%" max="%CLIMB_MAX%" value="%CLIMB_THRESHOLD%"></td>
 	</tr>
 	<tr>
-	<td>Zero Threshold [%ZERO_MIN% .. %ZERO_MAX%]</td> <td><input type="number" id="zeroThreshold" name=zeroThreshold min="%ZERO_MIN%" max="%ZERO_MAX%" value="%ZERO_THRESHOLD%"></td>
+	<td>Zero Threshold [%ZERO_MIN% .. %ZERO_MAX%]</td> <td><input type="number" id="zeroThreshold" name="zeroThreshold" min="%ZERO_MIN%" max="%ZERO_MAX%" value="%ZERO_THRESHOLD%"></td>
 	</tr>
 	<tr>
-	<td>Sink Threshold [%SINK_MIN% .. %SINK_MAX%]</td> <td><input type="number" id="sinkThreshold" name=sinkThreshold min="%SINK_MIN%" max="%SINK_MAX%" value="%SINK_THRESHOLD%"></td>
+	<td>Sink Threshold [%SINK_MIN% .. %SINK_MAX%]</td> <td><input type="number" id="sinkThreshold" name="sinkThreshold" min="%SINK_MIN%" max="%SINK_MAX%" value="%SINK_THRESHOLD%"></td>
 	</tr>
 	<tr>
-	<td>Crossover Climbrate [%XOVER_MIN% .. %XOVER_MAX%]</td><td><input type="number" id="crossoverClimbrate" name=crossoverClimbrate min="%XOVER_MIN%" max="%XOVER_MAX%" value="%CROSSOVER_CLIMBRATE%"></td>
+	<td>Crossover Climbrate [%XOVER_MIN% .. %XOVER_MAX%]</td><td><input type="number" id="crossoverClimbrate" name="crossoverClimbrate" min="%XOVER_MIN%" max="%XOVER_MAX%" value="%CROSSOVER_CLIMBRATE%"></td>
 	</tr>
 	</table>  
 </fieldset>
@@ -51,10 +51,10 @@
 <fieldset><legend>Kalman Filter</legend>
 <table>
 <tr>
-  <td>Acceleration Variance [%AVAR_MIN% .. %AVAR_MAX%]</td> <td><input type="number" id="accelVariance" name=accelVariance min="%AVAR_MIN%" max="%AVAR_MAX%" value="%ACCEL_VARIANCE%"></td>
+  <td>Acceleration Variance [%AVAR_MIN% .. %AVAR_MAX%]</td> <td><input type="number" id="accelVariance" name="accelVariance" min="%AVAR_MIN%" max="%AVAR_MAX%" value="%ACCEL_VARIANCE%"></td>
 </tr>
 <tr>
-  <td>Altitude Noise Variance [%ZVAR_MIN% .. %ZVAR_MAX%]</td><td><input type="number" id="noiseVariance" name=noiseVariance min="%ZVAR_MIN%" max="%ZVAR_MAX%" value="%NOISE_VARIANCE%"></td>
+  <td>Altitude Noise Variance [%ZVAR_MIN% .. %ZVAR_MAX%]</td><td><input type="number" id="noiseVariance" name="noiseVariance" min="%ZVAR_MIN%" max="%ZVAR_MAX%" value="%NOISE_VARIANCE%"></td>
 </tr>
 </table>  
 </fieldset>
@@ -63,12 +63,12 @@
 <fieldset><legend>Miscellaneous</legend>
 <table>
 <tr>
-  <td>Sleep Timeout [%SLEEP_MIN% .. %SLEEP_MAX%]</td> <td><input type="number" id="sleepTimeout" name=sleepTimeout min="%SLEEP_MIN%" max="%SLEEP_MAX%" value="%SLEEP_TIMEOUT%"></td>
+  <td>Sleep Timeout [%SLEEP_MIN% .. %SLEEP_MAX%]</td> <td><input type="number" id="sleepTimeout" name="sleepTimeout" min="%SLEEP_MIN%" max="%SLEEP_MAX%" value="%SLEEP_TIMEOUT%"></td>
 </tr>
 </table>  
 Bluetooth LK8EX1 @10Hz 
-<input type="radio" id="ble_off" name=ble value="ble_off" "%BLE_OFF%"><label for="ble_off">Off</label>
-<input type="radio" id="ble_on" name=ble value="ble_on" "%BLE_ON%"><label for="ble_on">On</label>"
+<input type="radio" id="ble_off" name="ble" value="ble_off" %BLE_OFF%><label for="ble_off">Off</label>
+<input type="radio" id="ble_on" name="ble" value="ble_on" %BLE_ON%><label for="ble_on">On</label>
 </fieldset>
 <br>
 

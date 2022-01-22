@@ -8,36 +8,6 @@ body{
 	background-color:#d6d0bf;
 	}
 
-ul{
-	list-style-type:none;
-	margin:0.1em;
-	padding:0;
-	border-radius:0.375em;
-	overflow:hidden;
-	background-color:#99CCFF;
-	font-size:1em;
-	}
-
-last-child {
-	border-right:none;
-	font-size:85%
-	}
-
-a:link{
-	color:white;
-	font-size:100%;
-	text-decoration:none;
-	}
-
-a:hover{
-	color:white;
-	font-size:100%;
-	text-decoration:none;
-	}
-
-section {
-	font-size:1.0em;
-	}
 
 h1{
 	color:white;
@@ -62,57 +32,6 @@ table{
 	font-size:1.0em;
 	border-collapse:collapse;
 	width:80%;
-	}
-
-.rcorners_n {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:20%;
-	color:white;
-	font-size:75%;
-	}
-	
-.rcorners_m {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:50%;
-	color:white;
-	font-size:75%;
-	}
-	
-.rcorners_w {
-	border-radius:0.5em;
-	background:#558ED5;
-	padding:0.3em 0.3em;
-	width:70%;
-	color:white;
-	font-size:75%;
-	}
-	
-.column{
-	float:left;
-	width:50%;
-	height:45%;
-	}
-	
-.row:after{
-	content:'';
-	display:table;
-	clear:both;
-	}
-	
-* {
-	box-sizing:border-box;
-	}
-	
-footer {
-	background-color:#009999; 
-	text-align:center;
-	padding:0.3em 0.3em;
-	border-radius:0.375em;
-	font-size:60%;
 	}
 	
 button {
@@ -144,6 +63,6 @@ input[type="number"] {
    }
 		
 p {
-	font-size:100%;
+	font-size:1.0em;
 	}
 

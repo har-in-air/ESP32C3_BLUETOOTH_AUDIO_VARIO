@@ -4,18 +4,18 @@
 // define as true if you want the associated feature support in the  code. 
 
 #define CFG_L9110S      true
-#define CFG_LANTERN     true
+#define CFG_LANTERN     false
 
 ////////////////////////////////////////////////////////////////////////
 
 #define pinPCC       9
-#define pinSDA       6
-#define pinSCL       7
-#define pinDRDYInt   18
-#define pinAudio 	 19
+#define pinSDA       19
+#define pinSCL       18
+#define pinDRDYInt   10
+#define pinAudio 	 4
 
 #if (CFG_L9110S == true)
-    #define pinL9110Pwr  10
+    #define pinL9110Pwr  3
 #endif
 #if (CFG_LANTERN == true)
     #define pinLED      5

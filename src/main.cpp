@@ -18,7 +18,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "1.00";
+const char* FwRevision = "0.90";
 
 MPU9250    Mpu9250;
 MS5611     Ms5611;
@@ -94,7 +94,7 @@ void setup_vario() {
 	DrdyCounter = 0;
 	DrdyFlag = false;
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
-	// pinDRDYInt (GPIO15) which already has an external 10K pull-down resistor (required for normal ESP8266 boot mode)
+	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
 	pinMode(pinDRDYInt, INPUT); 
 	attachInterrupt(digitalPinToInterrupt(pinDRDYInt), drdy_interrupt_handler, RISING);
 
@@ -162,7 +162,7 @@ void setup_lantern() {
 //    flash were never written, or if the entire flash has been erased.
 
 void setup() {
-	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
+	pinMode(pinPCC, INPUT_PULLUP); //  Program/Configure/Calibrate Button
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    

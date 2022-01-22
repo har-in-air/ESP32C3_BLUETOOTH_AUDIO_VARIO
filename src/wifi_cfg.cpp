@@ -4,7 +4,7 @@
 #include <LittleFS.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h>
+//#include <AsyncElegantOTA.h>
 #include <ESPmDNS.h>
 #include <esp_wifi.h>
 #include "config.h"
@@ -31,7 +31,6 @@ static String server_string_processor(const String& var);
 static void not_found_handler(AsyncWebServerRequest *request);
 static void get_handler(AsyncWebServerRequest *request);
 static void index_page_handler(AsyncWebServerRequest *request);
-static void css_handler(AsyncWebServerRequest *request);
 static void set_defaults_handler(AsyncWebServerRequest *request);
 
 	
@@ -188,7 +187,7 @@ void wificfg_ap_server_init() {
 	else {
 		wifi_start_as_station();
 		}	
-	if (!MDNS.begin("esp32")) { // Use http://esp32.local for web server page
+	if (!MDNS.begin("vario")) { // Use http://vario.local for web server page
 		Serial.println("Error starting mDNS service");
 	    }
     pServer = new AsyncWebServer(80);
@@ -198,13 +197,13 @@ void wificfg_ap_server_init() {
         }
 
     pServer->onNotFound(not_found_handler);
+    pServer->serveStatic("/", LittleFS, "/");
     pServer->on("/", HTTP_GET, index_page_handler);
     pServer->on("/defaults", HTTP_GET, set_defaults_handler);
     pServer->on("/get", HTTP_GET, get_handler);	
-    pServer->serveStatic("/", LittleFS, "/");
 
     // add support for OTA firmware update
-    AsyncElegantOTA.begin(pServer);
+   // AsyncElegantOTA.begin(pServer);
     pServer->begin();
 	MDNS.addService("http", "tcp", 80);
     }
@@ -214,11 +213,6 @@ static void index_page_handler(AsyncWebServerRequest *request){
 	int adcVal = adc_sample_average();
 	BatteryVoltage = adc_battery_voltage(adcVal);
 	request->send(LittleFS, "/index.html", String(), false, server_string_processor);
-	}
-
-
-static void css_handler(AsyncWebServerRequest *request){
-	request->send(LittleFS, "/style.css", "text/css");
 	}
 
 
