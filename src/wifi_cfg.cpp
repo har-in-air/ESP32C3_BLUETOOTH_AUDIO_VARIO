@@ -32,6 +32,7 @@ static void not_found_handler(AsyncWebServerRequest *request);
 static void get_handler(AsyncWebServerRequest *request);
 static void index_page_handler(AsyncWebServerRequest *request);
 static void set_defaults_handler(AsyncWebServerRequest *request);
+static void css_handler(AsyncWebServerRequest *request);
 
 	
 void wifi_off() {
@@ -197,10 +198,10 @@ void wificfg_ap_server_init() {
         }
 
     pServer->onNotFound(not_found_handler);
-    pServer->serveStatic("/", LittleFS, "/");
     pServer->on("/", HTTP_GET, index_page_handler);
     pServer->on("/defaults", HTTP_GET, set_defaults_handler);
     pServer->on("/get", HTTP_GET, get_handler);	
+    pServer->on("/style.css", HTTP_GET, css_handler);	
 
     // add support for OTA firmware update
    // AsyncElegantOTA.begin(pServer);
@@ -208,6 +209,9 @@ void wificfg_ap_server_init() {
 	MDNS.addService("http", "tcp", 80);
     }
 
+static void css_handler(AsyncWebServerRequest *request){
+	request->send(LittleFS, "/style.css", "text/css");
+	}
 
 static void index_page_handler(AsyncWebServerRequest *request){
 	int adcVal = adc_sample_average();
