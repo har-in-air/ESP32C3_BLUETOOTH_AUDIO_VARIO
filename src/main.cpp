@@ -7,13 +7,12 @@
 #include "imu.h"
 #include "mpu9250.h"
 #include "ms5611.h"
-#include "kalman_filter4.h"
+#include "kalmanfilter4.h"
 #include "audio.h"
 #include "vaudio.h"
-#include "cct.h"
 #include "adc.h"
 #include "nvd.h"
-#include "ring_buf.h"
+#include "ringbuf.h"
 #include "wifi_cfg.h"
 #include "ui.h"
 #include "ble_uart.h"
@@ -28,8 +27,8 @@ boolean 	bWebConfigure = false;
 
 float AccelmG[3];  // milli-Gs
 float GyroDps[3];  // degrees/second
-float KfAltitudeCm;
-float KfClimbrateCps; 
+float KfAltitudeCm = 0.0f; // kalman filtered altitude in cm
+float KfClimbrateCps = 0.0f;  // kalman filtered climb/sink rate in cm/s
 
 uint32_t TimePreviousUs; // time markers
 uint32_t TimeNowUs;
@@ -45,18 +44,41 @@ int LEDPwmLkp[4] = {LANTERN_DIM, LANTERN_LOW, LANTERN_MID, LANTERN_HI};
 int LanternState;
 #endif
 
-volatile int DrdyCounter;
-volatile boolean DrdyFlag;
+volatile int DrdyCounter = 0;
+volatile boolean DrdyFlag = false;
+
+static void IRAM_ATTR drdy_interrupt_handler();
+static void time_init();
+
+// pinPCC (GPIO9) has an external 10K pullup resistor to VCC
+// pressing the button  will ground the pin.
+// This button has three different functions : program, configure, and calibrate (PCC)
+// 1. (Program)
+//    Power on the unit with PCC button pressed. Or with power on, keep 
+//    PCC pressed and momentarily press the reset button.
+//    This will put the ESP32-C3 into programming mode, and you can flash 
+//    the application code from the Arduino IDE.
+// 2. (WiFi Configuration)
+//    After normal power on, immediately press PCC and keep it pressed. 
+//    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
+//    configuration mode. 
+// 3. (Calibrate)
+//    After normal power on, wait until you hear the battery voltage feedback beeps and
+//    then the countdown to gyroscope calibration. If you press the PGCC button
+//    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
+//    Accelerometer re-calibration is required if the acceleration calibration values in 
+//    flash were never written, or if the entire flash has been erased.
+
 
 // handles data ready interrupt from MPU9250 (every 2ms)
-void IRAM_ATTR drdy_interrupt_handler() {
+static void IRAM_ATTR drdy_interrupt_handler() {
 	DrdyFlag = true;
 	DrdyCounter++;
 	}	
 
 
 // setup time markers for Mpu9250, Ms5611 and kalman filter
-void time_init() {
+static void time_init() {
 	TimeNowUs = TimePreviousUs = micros();
 	}
 
@@ -96,7 +118,7 @@ void setup_vario() {
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
 	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
 	pinMode(pinDRDYInt, INPUT); 
-	attachInterrupt(digitalPinToInterrupt(pinDRDYInt), drdy_interrupt_handler, RISING);
+	attachInterrupt(pinDRDYInt, drdy_interrupt_handler, RISING);
 
 	// configure MPU9250 to start generating gyro and accel data  
 	Mpu9250.config_accel_gyro();
@@ -142,27 +164,9 @@ void setup_lantern() {
 #endif
 
 
-// pinPCC (GPIO9) has an external 10K pullup resistor to VCC
-// pressing the button  will ground the pin.
-// This button has three different functions : program, configure, and calibrate (PCC)
-// 1. (Program)
-//    Power on the unit with PCC button pressed. Or with power on, keep 
-//    PCC pressed and momentarily press the reset button.
-//    This will put the ESP32-C3 into programming mode, and you can flash 
-//    the application code from the Arduino IDE.
-// 2. (WiFi Configuration)
-//    After normal power on, immediately press PCC and keep it pressed. 
-//    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
-//    configuration mode. 
-// 3. (Calibrate)
-//    After normal power on, wait until you hear the battery voltage feedback beeps and
-//    then the countdown to gyroscope calibration. If you press the PGCC button
-//    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
-//    Accelerometer re-calibration is required if the acceleration calibration values in 
-//    flash were never written, or if the entire flash has been erased.
 
 void setup() {
-	pinMode(pinPCC, INPUT_PULLUP); //  Program/Configure/Calibrate Button
+	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    
@@ -176,8 +180,9 @@ void setup() {
 	nvd_calib_load(Calib);
 
 	if (!LittleFS.begin()){
-		dbg_println(("Error mounting LittleFS"));
-		return;
+		dbg_println(("Error mounting LittleFS, restarting..."));
+		delay(1000);
+		ESP.restart();
 		}   
 
 	bWebConfigure = false;
@@ -225,7 +230,7 @@ void vario_loop() {
 		DrdyFlag = false;
 		time_update();
 		#ifdef CCT_DEBUG    
-		cct_set_marker(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
+		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
 		#endif    
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
 		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
@@ -242,15 +247,14 @@ void vario_loop() {
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
         float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
         float gxned = DEG_TO_RAD*GyroDps[0];
-        float gyned = DEG_TO_RAD*GyroDps[0];
-        float gzned = -DEG_TO_RAD*GyroDps[0];
+        float gyned = DEG_TO_RAD*GyroDps[1];
+        float gzned = -DEG_TO_RAD*GyroDps[2];
         float axned = AccelmG[1];
         float ayned = AccelmG[0];
         float azned = AccelmG[2];
 		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
 		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
-
 		BaroCounter++;
 		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
 		int32_t climbrate;
@@ -284,14 +288,15 @@ void vario_loop() {
 			}
 			
 	#ifdef CCT_DEBUG      
-		uint32_t elapsedUs =  cct_get_elapsedUs(); // calculate time  taken to read and process the data, must be less than 2mS
+		uint32_t elapsedUs =  micros() - marker; // calculate time  taken to read and process the data, must be less than 2mS
 	#endif
 		if (DrdyCounter >= 50) {
 			DrdyCounter = 0; // 0.1 second elapsed
 			if (Config.misc.bleEnable) {
 				int adcVal = analogRead(A0);
 				float batVoltage = adc_battery_voltage(adcVal);
-				int altM =  F_TO_I(KfAltitudeCm/100.0f);
+				float faltM = KfAltitudeCm/100.0f;
+				int altM =  F_TO_I(faltM);
 				ble_uart_transmit_LK8EX1(altM, climbrate, batVoltage);				
 				}
 			SleepCounter++;

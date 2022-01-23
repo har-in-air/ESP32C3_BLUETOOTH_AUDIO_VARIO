@@ -1,8 +1,8 @@
 body{
-	max-width:65%;
-	margin:0 auto;
+	max-width:600px;
+	margin: auto auto;
 	font-family:arial;
-	font-size:100%;
+	font-size:1.0em;
 	text-align:left;
 	color:black;
 	background-color:#d6d0bf;
@@ -20,7 +20,7 @@ h1{
 
 h2{
 	color:black;
-	font-size:1.0em;
+	font-size: 0.9em;
 	}
 
 h3{
@@ -31,35 +31,35 @@ table{
 	font-family:arial,sans-serif;
 	font-size:1.0em;
 	border-collapse:collapse;
-	width:80%;
 	}
+
+td {
+	text-align: left;
+}
 	
 button {
-	margin-bottom:1rem;
 	border-radius:0.5em;
 	background:#0066A2;
-	padding:0.3em 0.3em;
+	padding:0.3em 1.0em;
 	align-self:center;
-	width:25%;
 	color:white;
-	font-size:100%;
+	font-size:1.0em;
 	}
 
 input[type="number"] {
 	clear: both;
-	float: right;
-	width: 100px;
+	float: left;
+	width: 60px;
 	}
 
 .form-submit-button {
-	margin-bottom:1rem;
 	border-radius:0.5em;
-	padding:0.3em 0.3em;
+	padding:0.3em 1.0em;
 	background:#0066A2;
 	align-self:center;	
 	color:white;
-	width:25%;
-	font-size:100%;
+	margin: auto;
+	font-size:1.0em;
    }
 		
 p {
