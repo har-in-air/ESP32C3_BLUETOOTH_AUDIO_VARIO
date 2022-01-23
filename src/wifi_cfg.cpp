@@ -17,8 +17,8 @@ static const char* TAG = "wificfg";
 extern const char* FwRevision;
 
 
-const char* szAPSSID = "ESPC3-Vario-AP";
-const char* szAPPassword = "";
+const char* szAPSSID = "Vario-AP";
+const char* szAPPassword = ""; // no password for stand-alone access point
 
 AsyncWebServer* pServer = NULL;
 
