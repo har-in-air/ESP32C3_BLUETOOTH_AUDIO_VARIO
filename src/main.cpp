@@ -167,6 +167,9 @@ void setup_lantern() {
 
 void setup() {
 	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
+#if (CFG_L9110S == true)
+	pinMode(pinL9110Pwr, OUTPUT);
+#endif	
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG    
