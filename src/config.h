@@ -9,8 +9,8 @@
 ////////////////////////////////////////////////////////////////////////
 
 #define pinPCC       9
-#define pinSDA       19
-#define pinSCL       18
+#define pinSDA       7
+#define pinSCL       6
 #define pinDRDYInt   10
 #define pinAudio 	 4
 
@@ -141,7 +141,7 @@
 // !! ensure these #defines are commented out after debugging, as the 
 // enclosed debug prints are in the critical run-time loop.
 //#define IMU_DEBUG
-#define CCT_DEBUG
+//#define CCT_DEBUG
 
 
 #endif

@@ -181,6 +181,7 @@ void setup() {
 	dbg_println(("\r\nLoad non-volatile configuration and calibration data from flash"));  
 	nvd_config_load(Config);
 	nvd_calib_load(Calib);
+	adc_init();
 
 	if (!LittleFS.begin()){
 		dbg_println(("Error mounting LittleFS, restarting..."));
@@ -296,8 +297,7 @@ void vario_loop() {
 		if (DrdyCounter >= 50) {
 			DrdyCounter = 0; // 0.1 second elapsed
 			if (Config.misc.bleEnable) {
-				int adcVal = analogRead(A0);
-				float batVoltage = adc_battery_voltage(adcVal);
+				float batVoltage = adc_battery_voltage();
 				float faltM = KfAltitudeCm/100.0f;
 				int altM =  F_TO_I(faltM);
 				ble_uart_transmit_LK8EX1(altM, climbrate, batVoltage);				

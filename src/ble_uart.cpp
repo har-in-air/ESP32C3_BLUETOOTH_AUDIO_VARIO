@@ -24,7 +24,7 @@ NimBLECharacteristic* pRxCharacteristic = NULL;
 static uint8_t ble_uart_nmea_checksum(const char *szNMEA);
 
 void ble_uart_init() {
-	NimBLEDevice::init("ESPC3-BLE-Vario");
+	NimBLEDevice::init("BLE-Vario");
 	NimBLEDevice::setMTU(46);
 	NimBLEDevice::setPower(ESP_PWR_LVL_P9);
 	NimBLEDevice::setSecurityAuth(true, true, true);
