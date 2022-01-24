@@ -51,6 +51,8 @@ A few components may not be readily available on Aliexpress/Ebay. You can find t
 * TI TPS22918 high-side switch 
 * Broadband piezo speaker : PUI Audio AT2310TLW100R, Kingstate KPEG006 
 
+## Current Drain
+
 Battery current drain is `~30mA` operating as audio vario with bluetooth LE disabled. 
 
 Battery current drain is `~85mA` operating as audio vario with bluetooth LE LK8EX1 message transmission @ 10Hz.
