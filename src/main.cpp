@@ -42,7 +42,6 @@ int DrdyCounter;
 volatile SemaphoreHandle_t DrdySemaphore;
 
 static void IRAM_ATTR drdy_interrupt_handler();
-static void time_init();
 static void vario_task(void * pvParameter);
 static void wifi_config_task(void * pvParameter);
 
@@ -76,74 +75,10 @@ static void IRAM_ATTR drdy_interrupt_handler() {
 	}	
 
 
-// setup time markers for Mpu9250, Ms5611 and kalman filter
-static void time_init() {
-	TimeNowUs = TimePreviousUs = micros();
-	}
-
-
 inline void time_update(){
 	TimeNowUs = micros();
 	ImuTimeDeltaUSecs = TimeNowUs > TimePreviousUs ? (float)(TimeNowUs - TimePreviousUs) : 2000.0f; // if rollover use expected time difference
 	TimePreviousUs = TimeNowUs;
-	}
-
-
-void setup_vario() {
-	dbg_println(("Vario mode"));
- 	Wire.begin(pinSDA, pinSCL);
-	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
-	delay(100);
-	dbg_println(("\r\nChecking communication with MS5611"));
-	if (!Ms5611.read_prom()) {
-		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
-		Serial.flush();
-		ui_indicate_fault_MS5611(); 
-		ui_go_to_sleep();   // switch off and then on to fix this
-		}
-	dbg_println(("MS5611 OK"));
-  
-	dbg_println(("\r\nChecking communication with MPU9250"));
-	if (!Mpu9250.check_id()) {
-		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
-		Serial.flush();
-		ui_indicate_fault_MPU9250();
-		ui_go_to_sleep();   // switch off and then on to fix this
-		}
-	dbg_println(("MPU9250 OK"));
-    
-
-	// configure MPU9250 to start generating gyro and accel data  
-	Mpu9250.config_accel_gyro();
-
-	// calibrate gyro (and accel if required)
-	ui_calibrate_accel_gyro();
-	delay(50);  
-	  
-	dbg_println(("\r\nMS5611 config"));
-	Ms5611.reset();
-	Ms5611.get_calib_coefficients(); // load MS5611 factory programmed calibration data
-	Ms5611.averaged_sample(4); // get an estimate of starting altitude
-	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
-
-	dbg_println(("\r\nKalmanFilter config"));
-	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
-
-	vaudio_config();  
-	time_init();
-	KfTimeDeltaUSecs = 0.0f;
-	BaroCounter = 0;
-	SleepTimeoutSecs = 0;
-	ringbuf_init(); 
-	SleepCounter = 0;
-	if (Config.misc.bleEnable){
-		ble_uart_init();
-		dbg_println(("\r\nStarting Vario with Bluetooth LE LK8EX1 messages @ 10Hz\r\n"));
-		}
-	else {
-		dbg_println(("\r\nStarting Vario with Bluetooth LE disabled\r\n"));  
-		}
 	}
 
 
@@ -188,6 +123,7 @@ void setup() {
 		dbg_println(("Vario mode"));
     	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
 		}
+	// delete the loopTask which called setup() from arduino app_main()
 	vTaskDelete(NULL);
 	}
 
@@ -208,12 +144,63 @@ void wifi_config_task(void * pvParameter) {
 
 void vario_task(void * pvParameter) {
 	ui_indicate_battery_voltage();
-	setup_vario();
+	dbg_println(("Vario mode"));
+ 	Wire.begin(pinSDA, pinSCL);
+	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
+	dbg_println(("\r\nChecking communication with MS5611"));
+	if (!Ms5611.read_prom()) {
+		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
+		Serial.flush();
+		ui_indicate_fault_MS5611(); 
+		ui_go_to_sleep();   // switch off and then on to fix this
+		}
+	dbg_println(("MS5611 OK"));
+  
+	dbg_println(("\r\nChecking communication with MPU9250"));
+	if (!Mpu9250.check_id()) {
+		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
+		Serial.flush();
+		ui_indicate_fault_MPU9250();
+		ui_go_to_sleep();   // switch off and then on to fix this
+		}
+	dbg_println(("MPU9250 OK"));
+    
+	// configure MPU9250 to start generating gyro and accel data  
+	Mpu9250.config_accel_gyro();
+
+	// calibrate gyro (and accel if required)
+	ui_calibrate_accel_gyro();
+	delay(50);  
+	  
+	dbg_println(("\r\nMS5611 config"));
+	Ms5611.reset();
+	Ms5611.get_calib_coefficients(); // load MS5611 factory programmed calibration data
+	Ms5611.averaged_sample(4); // get an estimate of starting altitude
+	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
+
+	dbg_println(("\r\nKalmanFilter config"));
+	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
+	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
+
+	vaudio_config();  
+	TimeNowUs = TimePreviousUs = micros();
+	KfTimeDeltaUSecs = 0.0f;
+	BaroCounter = 0;
+	SleepCounter = 0;
+	SleepTimeoutSecs = 0;
+	ringbuf_init(); 
+	if (Config.misc.bleEnable){
+		ble_uart_init();
+		dbg_println(("\r\nStarting Vario with Bluetooth LE LK8EX1 messages @ 10Hz\r\n"));
+		}
+	else {
+		dbg_println(("\r\nStarting Vario with Bluetooth LE disabled\r\n"));  
+		}
 	ui_btn_init();	
-	DrdyCounter = 0;
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
 	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
 	pinMode(pinDRDYInt, INPUT); 
+	DrdyCounter = 0;
     DrdySemaphore = xSemaphoreCreateBinary();
 	attachInterrupt(pinDRDYInt, drdy_interrupt_handler, RISING);
 
