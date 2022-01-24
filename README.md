@@ -10,9 +10,7 @@ accurate barometric altitude and climb/sink rate data.
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * Visual Studio Code with PlatformIO plugin using Arduino framework targeting `esp32dev` board. The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. 
-* A minor type-cast compile error for the AsyncTCP library has to be fixed by editing the local version of the library source code in the project `.pio` subdirectory. You will see the build error if you select `Clean All` before build. Fix : Replace 0U by (uint32_t)0.
-* Custom `partition.csv` file with two 1.9MB code partitions supporting OTA firmware updates
-* ~160kByte LittleFS partition for hosting HTML web server pages
+* ~128kByte LittleFS partition for hosting HTML web server pages
 
 # Hardware
 
@@ -106,13 +104,4 @@ So you can still configure the vario in the field.
 
 <img src="docs/wifi_config_webpage.png">
 
-# WiFi OTA Firmware Update
-You will find the compiled binary file `firmware.bin` in the project directory `.pio/build/esp32c3/`. 
 
-Put the vario into Wifi configuration mode and then open the url `http://192.168.4.1/update` (`http://vario.local/update`) in a browser.
-
-Upload the `firmware.bin` file. Switch the vario off and on again. 
-Select WiFi configuration mode again. 
-If the firmware revision string has been updated in the new firmware binary, you can confirm the updated revision in the home page url `http://192.168.4.1` (`http://vario.local`).
-
-<img src="docs/firmware_update.png">
