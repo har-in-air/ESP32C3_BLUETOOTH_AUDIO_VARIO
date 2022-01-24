@@ -1,0 +1,115 @@
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0xd (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x3fcd6100,len:0x1430
+load:0x403ce000,len:0x930
+load:0x403d0000,len:0x2d68
+entry 0x403ce000
+I (31) boot: ESP-IDF v4.4-dev-3401-gb86fe0c66c 2nd stage bootloader
+I (31) boot: compile time 18:11:55
+I (31) boot: chip revision: 3
+I (31) boot_comm: chip revision: 3, min. bootloader chip revision: 0
+I (37) boot.esp32c3: SPI Speed      : 40MHz
+I (41) boot.esp32c3: SPI Mode       : DIO
+I (45) boot.esp32c3: SPI Flash Size : 2MB
+I (49) boot: Enabling RNG early entropy source...
+I (53) boot: Partition Table:
+I (56) boot: ## Label            Usage          Type ST Offset   Length
+I (62) boot:  0 ota_0            OTA app          00 10 00010000 001c8000
+I (68) boot:  1 otadata          OTA data         01 00 001d8000 00002000
+I (75) boot:  2 nvs              WiFi data        01 02 001da000 00006000
+I (82) boot:  3 spiffs           Unknown data     01 82 001e0000 00020000
+I (88) boot: End of partition table
+I (91) boot_comm: chip revision: 3, min. application chip revision: 0
+I (97) esp_image: segment 0: paddr=00010020 vaddr=3c0e0020 size=1bb40h (113472) map
+I (129) esp_image: segment 1: paddr=0002bb68 vaddr=3fc91200 size=034f0h ( 13552) load
+I (133) esp_image: segment 2: paddr=0002f060 vaddr=40380000 size=00fb8h (  4024) load
+I (134) esp_image: segment 3: paddr=00030020 vaddr=42000020 size=d401ch (868380) map
+I (328) esp_image: segment 4: paddr=00104044 vaddr=40380fb8 size=100b0h ( 65712) load
+I (344) esp_image: segment 5: paddr=001140fc vaddr=50000000 size=00004h (     4) load
+I (344) esp_image: segment 6: paddr=00114108 vaddr=50000008 size=00010h (    16) load
+I (353) boot: Loaded app from partition at offset 0x10000
+I (353) boot: Disabling RNG early entropy source...
+
+
+ESP32-C3 BLUETOOTH VARIO compiled on Jan 24 2022 at 12:07:42
+Firmware Revision 0.90
+
+Load non-volatile configuration and calibration data from flash
+WiFi AP credentials
+SSID = 
+VARIO
+climbThresholdCps = 50
+zeroThresholdCps = 5
+sinkThresholdCps = -250
+crossoverCps = 400
+KALMAN FILTER
+accelVariance = 100
+zMeasVariance = 200
+MISCELLANEOUS
+sleepTimeoutMinutes = 15
+bleEnable = true
+ACCEL & GYRO Calibration Values
+axBias = -95
+ayBias = -67
+azBias = 166
+gxBias = 22
+gyBias = -8
+gzBias = 26
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+8
+7
+6
+5
+4
+3
+2
+1
+Vario mode
+
+Battery voltage = 3.97V
+Vario mode
+
+Checking communication with MS5611
+MS5611 PROM CRC = 0x9
+Calculated CRC = 0x9
+MS5611 OK
+
+Checking communication with MPU9250
+MPU9250 OK
+Counting down to gyro calibration
+Press the PCC button to enforce accelerometer calibration first
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating gyro
+Num Tries = 1
+gxBias = 21
+gyBias = -8
+gzBias = 26
+Gyro calibration OK
+
+MS5611 config
+MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
+Tavg : 31C
+Pavg : 90832Pa
+Zavg : 91257cm
+
+KalmanFilter config
+climbToneCps = 50
+zeroesToneCps = 5
+sinkToneCps = -250
+crossoverCps = 400
+
+Starting Vario with Bluetooth LE LK8EX1 messages @ 10Hz

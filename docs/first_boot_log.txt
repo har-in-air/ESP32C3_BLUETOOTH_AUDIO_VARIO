@@ -1,0 +1,380 @@
+Processing esp32c3 (platform: https://github.com/platformio/platform-espressif32.git#feature/idf-master; framework: arduino; board: esp32dev)
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32dev.html
+PLATFORM: Espressif 32 (3.3.0+sha.3b5de56) > Espressif ESP32 Dev Module
+HARDWARE: ESP32C3 80MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (esp-prog) External (esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 0.0.0+sha.ed53b6c 
+ - tool-esptoolpy 1.30100.210531 (3.1.0) 
+ - tool-mkspiffs 2.230.0 (2.30) 
+ - toolchain-riscv-esp 1.80400.0 (8.4.0) 
+ - toolchain-riscv32-esp 8.4.0+2021r2
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 34 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- <NimBLE-Arduino> 1.3.6
+|-- <AsyncTCP> 1.1.1
+|-- <ESP Async WebServer> 1.2.3+sha.1d46269
+|   |-- <AsyncTCP> 1.1.1
+|   |-- <AsyncElegantOTA> 2.2.6
+|   |   |-- <AsyncTCP> 1.1.1
+|   |   |-- <FS> 2.0.0
+|   |   |-- <WiFi> 2.0.0
+|   |-- <FS> 2.0.0
+|   |-- <WiFi> 2.0.0
+|-- <FS> 2.0.0
+|-- <LittleFS> 2.0.0
+|   |-- <FS> 2.0.0
+|-- <Wire> 2.0.0
+|-- <Preferences> 2.0.0
+|-- <Ticker> 2.0.0
+|-- <ESPmDNS> 2.0.0
+|   |-- <WiFi> 2.0.0
+|-- <WiFi> 2.0.0
+Building in debug mode
+Retrieving maximum program size .pio/build/esp32c3/firmware.elf
+Checking size .pio/build/esp32c3/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]  13.0% (used 42656 bytes from 327680 bytes)
+Flash: [======    ]  56.9% (used 1061924 bytes from 1867776 bytes)
+Configuring upload protocol...
+AVAILABLE: esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Auto-detected: /dev/ttyUSB0
+Uploading .pio/build/esp32c3/firmware.bin
+esptool.py v3.1
+Serial port /dev/ttyUSB0
+Connecting....
+Chip is unknown ESP32-C3 (revision 3)
+Features: Wi-Fi
+Crystal is 40MHz
+MAC: 7c:df:a1:b4:08:50
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Auto-detected Flash size: 2MB
+Flash will be erased from 0x00000000 to 0x00004fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x00114fff...
+Compressed 19232 bytes to 12010...
+Writing at 0x00000000... (100 %)
+Wrote 19232 bytes (12010 compressed) at 0x00000000 in 0.6 seconds (effective 256.2 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 117...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (117 compressed) at 0x00008000 in 0.1 seconds (effective 410.2 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 547.2 kbit/s)...
+Hash of data verified.
+Compressed 1065280 bytes to 601000...
+Writing at 0x00010000... (2 %)
+Writing at 0x0001b50c... (5 %)
+Writing at 0x000262c2... (8 %)
+Writing at 0x0002fa45... (10 %)
+Writing at 0x000369ef... (13 %)
+Writing at 0x0003d9ef... (16 %)
+Writing at 0x00044b2f... (18 %)
+Writing at 0x0004bf06... (21 %)
+Writing at 0x00052d51... (24 %)
+Writing at 0x0005a455... (27 %)
+Writing at 0x00062a9b... (29 %)
+Writing at 0x00069a5e... (32 %)
+Writing at 0x0007088a... (35 %)
+Writing at 0x00077754... (37 %)
+Writing at 0x0007e684... (40 %)
+Writing at 0x000853cf... (43 %)
+Writing at 0x0008c4dd... (45 %)
+Writing at 0x0009345e... (48 %)
+Writing at 0x0009a990... (51 %)
+Writing at 0x000a0f3d... (54 %)
+Writing at 0x000a7c1c... (56 %)
+Writing at 0x000ae5b2... (59 %)
+Writing at 0x000b4764... (62 %)
+Writing at 0x000bb153... (64 %)
+Writing at 0x000c1c52... (67 %)
+Writing at 0x000c7a9f... (70 %)
+Writing at 0x000cd93b... (72 %)
+Writing at 0x000d38f6... (75 %)
+Writing at 0x000d9eac... (78 %)
+Writing at 0x000e03fc... (81 %)
+Writing at 0x000e6967... (83 %)
+Writing at 0x000ec862... (86 %)
+Writing at 0x000f32ae... (89 %)
+Writing at 0x000fb1e3... (91 %)
+Writing at 0x00101fcb... (94 %)
+Writing at 0x0010881c... (97 %)
+Writing at 0x0010f38f... (100 %)
+Wrote 1065280 bytes (601000 compressed) at 0x00010000 in 17.8 seconds (effective 478.2 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+=================================================================================================== [SUCCESS] Took 27.50 seconds ===================================================================================================
+--- Available filters and text transformations: colorize, debug, default, direct, esp32_exception_decoder, hexlify, log2file, nocontrol, printable, send_on_enter, time
+--- More details at https://bit.ly/pio-monitor-filters
+--- Miniterm on /dev/ttyUSB0  115200,8,N,1 ---
+--- Quit: Ctrl+C | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H ---
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0xd (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x3fcd6100,len:0x1430
+load:0x403ce000,len:0x930
+load:0x403d0000,len:0x2d68
+entry 0x403ce000
+I (31) boot: ESP-IDF v4.4-dev-3401-gb86fe0c66c 2nd stage bootloader
+I (31) boot: compile time 18:11:55
+I (31) boot: chip revision: 3
+I (31) boot_comm: chip revision: 3, min. bootloader chip revision: 0
+I (37) boot.esp32c3: SPI Speed      : 40MHz
+I (41) boot.esp32c3: SPI Mode       : DIO
+I (45) boot.esp32c3: SPI Flash Size : 2MB
+I (49) boot: Enabling RNG early entropy source...
+I (53) boot: Partition Table:
+I (56) boot: ## Label            Usage          Type ST Offset   Length
+I (62) boot:  0 ota_0            OTA app          00 10 00010000 001c8000
+I (68) boot:  1 otadata          OTA data         01 00 001d8000 00002000
+I (75) boot:  2 nvs              WiFi data        01 02 001da000 00006000
+I (82) boot:  3 spiffs           Unknown data     01 82 001e0000 00020000
+I (88) boot: End of partition table
+I (91) boot: No factory image, trying OTA 0
+I (95) boot_comm: chip revision: 3, min. application chip revision: 0
+I (101) esp_image: segment 0: paddr=00010020 vaddr=3c0e0020 size=1bb40h (113472) map
+I (133) esp_image: segment 1: paddr=0002bb68 vaddr=3fc91200 size=034f0h ( 13552) load
+I (137) esp_image: segment 2: paddr=0002f060 vaddr=40380000 size=00fb8h (  4024) load
+I (138) esp_image: segment 3: paddr=00030020 vaddr=42000020 size=d401ch (868380) map
+I (332) esp_image: segment 4: paddr=00104044 vaddr=40380fb8 size=100b0h ( 65712) load
+I (348) esp_image: segment 5: paddr=001140fc vaddr=50000000 size=00004h (     4) load
+I (348) esp_image: segment 6: paddr=00114108 vaddr=50000008 size=00010h (    16) load
+I (357) boot: Loaded app from partition at offset 0x10000
+I (429) boot: Set actual ota_seq=1 in otadata[0]
+I (429) boot: Disabling RNG early entropy source...
+
+
+ESP32-C3 BLUETOOTH VARIO compiled on Jan 24 2022 at 12:07:42
+Firmware Revision 0.90
+
+Load non-volatile configuration and calibration data from flash
+[   565][E][Preferences.cpp:50] begin(): nvs_open failed: NOT_FOUND
+Preferences 'config' namespace not found, creating with defaults
+[   581][E][Preferences.cpp:50] begin(): nvs_open failed: NOT_FOUND
+Preferences 'calib' namespace not found, creating with defaults
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+8
+7
+6
+5
+4
+3
+2
+1
+Vario mode
+
+Battery voltage = 4.01V
+Vario mode
+
+Checking communication with MS5611
+MS5611 PROM CRC = 0x9
+Calculated CRC = 0x6
+Bad CRC read from MS5611 calibration PROM
+
+!!!!!!!!!!!!!!!!!!!!!! INSERTED COMMENT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+YOU MAY SEE AN I2C COMMUNICATION ERROR LIKE THIS ONE ABOVE AFTER FLASHING CODE OR THE DATA
+PARTITION. TO FIX, SWITCH OFF THE VARIO AND SWITCH ON AGAIN. THIS TIME THE CALIBRATION
+PARAMETERS ARE ALREADY SET TO DEFAULTS (ZERO). THAT IS ALSO DETECTED AS UNCALIBRATED, 
+AND ACCELEROMETER CALIBRATION WILL EXECUTE BEFORE GYRO CALIBRATION. 
+MAKE SURE THE VARIO IS UNDISTURBED AND LYING FLAT ON A HORIZONTAL SURFACE.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0xd (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x3fcd6100,len:0x1430
+load:0x403ce000,len:0x930
+load:0x403d0000,len:0x2d68
+entry 0x403ce000
+I (31) boot: ESP-IDF v4.4-dev-3401-gb86fe0c66c 2nd stage bootloader
+I (31) boot: compile time 18:11:55
+I (31) boot: chip revision: 3
+I (31) boot_comm: chip revision: 3, min. bootloader chip revision: 0
+I (37) boot.esp32c3: SPI Speed      : 40MHz
+I (41) boot.esp32c3: SPI Mode       : DIO
+I (45) boot.esp32c3: SPI Flash Size : 2MB
+I (49) boot: Enabling RNG early entropy source...
+I (53) boot: Partition Table:
+I (56) boot: ## Label            Usage          Type ST Offset   Length
+I (62) boot:  0 ota_0            OTA app          00 10 00010000 001c8000
+I (68) boot:  1 otadata          OTA data         01 00 001d8000 00002000
+I (75) boot:  2 nvs              WiFi data        01 02 001da000 00006000
+I (82) boot:  3 spiffs           Unknown data     01 82 001e0000 00020000
+I (88) boot: End of partition table
+I (91) boot_comm: chip revision: 3, min. application chip revision: 0
+I (97) esp_image: segment 0: paddr=00010020 vaddr=3c0e0020 size=1bb40h (113472) map
+I (129) esp_image: segment 1: paddr=0002bb68 vaddr=3fc91200 size=034f0h ( 13552) load
+I (133) esp_image: segment 2: paddr=0002f060 vaddr=40380000 size=00fb8h (  4024) load
+I (134) esp_image: segment 3: paddr=00030020 vaddr=42000020 size=d401ch (868380) map
+I (328) esp_image: segment 4: paddr=00104044 vaddr=40380fb8 size=100b0h ( 65712) load
+I (344) esp_image: segment 5: paddr=001140fc vaddr=50000000 size=00004h (     4) load
+I (344) esp_image: segment 6: paddr=00114108 vaddr=50000008 size=00010h (    16) load
+I (353) boot: Loaded app from partition at offset 0x10000
+I (353) boot: Disabling RNG early entropy source...
+
+
+ESP32-C3 BLUETOOTH VARIO compiled on Jan 24 2022 at 12:07:42
+Firmware Revision 0.90
+
+Load non-volatile configuration and calibration data from flash
+WiFi AP credentials
+SSID = 
+VARIO
+climbThresholdCps = 50
+zeroThresholdCps = 5
+sinkThresholdCps = -250
+crossoverCps = 400
+KALMAN FILTER
+accelVariance = 100
+zMeasVariance = 200
+MISCELLANEOUS
+sleepTimeoutMinutes = 15
+bleEnable = true
+ACCEL & GYRO Calibration Values
+axBias = 0
+ayBias = 0
+azBias = 0
+gxBias = 0
+gyBias = 0
+gzBias = 0
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+8
+7
+6
+5
+4
+3
+2
+1
+Vario mode
+
+Battery voltage = 4.00V
+Vario mode
+
+Checking communication with MS5611
+MS5611 PROM CRC = 0x9
+Calculated CRC = 0x9
+MS5611 OK
+
+Checking communication with MPU9250
+MPU9250 OK
+! Uncalibrated accelerometer !
+Starting accelerometer calibration
+-- Accelerometer calibration --
+Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed
+You have 10 seconds, counted down with rapid beeps from 50 to 0
+50
+49
+48
+47
+46
+45
+44
+43
+42
+41
+40
+39
+38
+37
+36
+35
+34
+33
+32
+31
+30
+29
+28
+27
+26
+25
+24
+23
+22
+21
+20
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating accelerometer
+ax = -95  ay = -67  az = 8358
+axBias = -95
+ayBias = -67
+azBias = 166
+Accelerometer calibration done
+Counting down to gyro calibration
+Press the PCC button to enforce accelerometer calibration first
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating gyro
+Num Tries = 1
+gxBias = 23
+gyBias = -7
+gzBias = 26
+Gyro calibration OK
+
+MS5611 config
+MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
+Tavg : 29C
+Pavg : 90838Pa
+Zavg : 91203cm
+
+KalmanFilter config
+climbToneCps = 50
+zeroesToneCps = 5
+sinkToneCps = -250
+crossoverCps = 400
+
+Starting Vario with Bluetooth LE LK8EX1 messages @ 10Hz
+

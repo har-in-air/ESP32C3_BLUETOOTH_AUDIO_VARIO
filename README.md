@@ -5,16 +5,12 @@
 * WiFi Over-the-air (OTA) firmware update 
 * Bluetooth LE transmission of $LK8EX1 sentences. You can then use flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with 
 accurate barometric altitude and climb/sink rate data.
-* You can build a minimal audio vario with the above functionality. Or you can add optional features :
-    * Push-pull L9110S driver with conventional loudspeakers for higher audio volume. 
-    * Torch/lantern mode using a 0.5W white led. 
-	This is accessed with a long press of a button when the unit is in vario mode. 
-	Once in lantern mode, you can cycle through 3 different brightness levels and an S.O.S. flasher mode.
-
+* Push-pull L9110S driver with conventional loudspeakers for higher audio volume. This is optional - you can drive a piezo buzzer directly from the ESP32-C3 pin for minimal component count at the cost of reduced audio volume.
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
-* Visual Studio Code with PlatformIO plugin using Arduino framework targeting `esp32dev` board. The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. ESP32-C3 Arduino framework support is new and not as solid as for the ESP32. A minor type-cast compile error for the AsyncTCP library had to be fixed by editing the local version of the library source code in the project `.pio` subdirectory.
+* Visual Studio Code with PlatformIO plugin using Arduino framework targeting `esp32dev` board. The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. 
+* A minor type-cast compile error for the AsyncTCP library has to be fixed by editing the local version of the library source code in the project `.pio` subdirectory. You will see the build error if you select `Clean All` before build. Fix : Replace 0U by (uint32_t)0.
 * Custom `partition.csv` file with two 1.9MB code partitions supporting OTA firmware updates
 * ~160kByte LittleFS partition for hosting HTML web server pages
 
@@ -37,8 +33,7 @@ The 10K I2C pullup resistors on the CJMCU-117 board should be replaced with 3.3K
 The TLV75533 3.3V LDO regulator has a high current rating of 500mA and is suitable for the ESP32-C3 power supply, which has high current spikes on wifi transmit bursts. 
 
 ## Optional Components
-The optional circuit components are marked with dashes on the schematic. Do not populate them if 
-you don't want the torch option or the L9110s loud(er) speaker option. 
+The optional circuit components are marked with dashes on the schematic. Do not populate them if you don't need the L9110s loud(er) speaker driver option. 
 
 You can first test the board with a direct connection from AUD pin to a piezo speaker and the other piezo
 pin connected to ground. 
@@ -57,37 +52,43 @@ A few components may not be readily available on Aliexpress/Ebay. You can find t
 * Ferrite bead 600ohms@100MHz : BLM18AG601SN1D
 * TI TPS22918 high-side switch 
 * Broadband piezo speaker : PUI Audio AT2310TLW100R, Kingstate KPEG006 
-* For torch LEDs up to 0.5W, populate one of R1, R2 with a 22ohm 2512 0.5W package. For higher wattage LEDs, add a second resistor in parallel. 
 
+Battery current drain is `~30mA` operating as audio vario with bluetooth LE disabled. 
 
-Battery current drain is `~xxmA` operating as audio vario with bluetooth LE disabled. 
-
-Battery current drain is `~xxmA` operating as audio vario with bluetooth LE LK8EX1 message transmission @ 10Hz.
+Battery current drain is `~85mA` operating as audio vario with bluetooth LE LK8EX1 message transmission @ 10Hz.
 
 # Software Build Notes
 
 ## Compile Feature Options
 * Feature support compile options are in `config.h`
-* For a minimal audio vario with the ESP32-C3 directly driving a piezo transducer, set `CFG_L9110S` and `CFG_LANTERN` to false.
+* For a minimal audio vario with the ESP32-C3 directly driving a piezo transducer, set `CFG_L9110S` to false.
 If you want support for louder volume using the L9110S push-pull driver IC, set `CFG_L9110S` to true.   
-* To support the torch/lantern feature, set `CFG_LANTERN` to true.
 
 ## Build Steps
 * The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. 
 * Next, select `Platform -> Build Filesystem Image`. This will build a LittleFS flash partition with the contents of the `/data` directory. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
-* Next, select `General -> Clean`, then `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
+* Next, select `General -> Clean All`, then `Build`. You may see (if the issue has not been fixed) this build error : 
+```
+Compiling .pio/build/esp32c3/libfe7/ESP Async WebServer/WebServer.cpp.o
+.pio/libdeps/esp32c3/ESP Async WebServer/src/AsyncWebSocket.cpp: In member function "IPAddress AsyncWebSocketClient::remoteIP()":
+.pio/libdeps/esp32c3/ESP Async WebServer/src/AsyncWebSocket.cpp:832:28: error: call of overloaded "IPAddress(unsigned int)" is ambiguous
+         return IPAddress(0U);
+```
+Fix the error by replacing 0U with (uint32_t)0. 
+* From now on, only select `General -> Clean` to avoid pulling in the original library source code again.
+* Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
-[This is a startup serial monitor log after a full flash erase.](docs/calibration_log.txt). 
+[This is a startup serial monitor log after a full flash erase.](docs/first_boot_log.txt). 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
-* [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/boot_log.txt). 
+* [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/normal_boot_log.txt). 
 
 
 # WiFi Configuration
 
 To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCC` button. When you hear a confirmation tone, release PCC. 
 
-Connect to the WiFi Access Point `ESPC3_Vario`, no password needed. 
+Connect to the WiFi Access Point `Vario-AP`, no password needed. 
 
 Open the url `http://192.168.4.1` in a browser.
 You can use `http://vario.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows install Bonjour.
