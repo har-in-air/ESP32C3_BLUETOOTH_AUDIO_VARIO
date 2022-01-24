@@ -106,12 +106,6 @@
 // until you find that gyro calibration works consistently.
 #define GYRO_OFFSET_LIMIT_1000DPS   	50
 
-// pwm settings for lantern brightness
-#define LANTERN_DIM   8
-#define LANTERN_LOW   32
-#define LANTERN_MID   64
-#define LANTERN_HI    255
-
 // print debug information to the serial port for different code modules
 
 #define TOP_DEBUG
