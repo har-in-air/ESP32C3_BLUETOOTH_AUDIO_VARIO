@@ -136,6 +136,7 @@ void wifi_config_task(void * pvParameter) {
 		}   
 	wificfg_ap_server_init(); 
 	while (1) {
+		// nothing to do, async web server 
 		vTaskDelay(1);
 		}
 	vTaskDelete(NULL);
@@ -143,8 +144,8 @@ void wifi_config_task(void * pvParameter) {
 
 
 void vario_task(void * pvParameter) {
-	ui_indicate_battery_voltage();
 	dbg_println(("Vario mode"));
+	ui_indicate_battery_voltage();
  	Wire.begin(pinSDA, pinSCL);
 	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
 	dbg_println(("\r\nChecking communication with MS5611"));
@@ -208,9 +209,9 @@ void vario_task(void * pvParameter) {
 		// MPU9250 500Hz ODR => 2mS sample interval
 		// wait for data ready interrupt from MPU9250 
 		xSemaphoreTake(DrdySemaphore, portMAX_DELAY); 
-		DrdyCounter++;
 		time_update();
-		#ifdef CCT_DEBUG    
+		DrdyCounter++;
+		#ifdef PERF_DEBUG    
 		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
 		#endif    
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
@@ -268,7 +269,7 @@ void vario_task(void * pvParameter) {
 				}
 			}
 			
-	#ifdef CCT_DEBUG      
+	#ifdef PERF_DEBUG      
 		uint32_t elapsedUs =  micros() - marker; // calculate time  taken to read and process the data, must be less than 2mS
 	#endif
 		if (DrdyCounter >= 50) {
@@ -293,7 +294,7 @@ void vario_task(void * pvParameter) {
 				//dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
 				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
-				#ifdef CCT_DEBUG      
+				#ifdef PERF_DEBUG      
 				// The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
 				// We need to read the MPU9250 data, MS5611 data and finish all computations
 				// and actions well within this interval.
