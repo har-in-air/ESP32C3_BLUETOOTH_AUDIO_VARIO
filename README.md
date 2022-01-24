@@ -53,9 +53,11 @@ A few components may not be readily available on Aliexpress/Ebay. You can find t
 
 ## Current Drain
 
-Battery current drain is `~30mA` operating as audio vario with bluetooth LE disabled. 
+18650 LiPoly battery, L9110S driving a PUI Audio piezo transducer, normal vario mode.
 
-Battery current drain is `~85mA` operating as audio vario with bluetooth LE LK8EX1 message transmission @ 10Hz.
+With Bluetooth LE disabled, current drain is ~30mA.
+
+With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drain is ~85mA.
 
 # Software Build Notes
 
