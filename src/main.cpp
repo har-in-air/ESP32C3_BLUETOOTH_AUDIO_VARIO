@@ -183,11 +183,6 @@ void setup() {
 	nvd_calib_load(Calib);
 	adc_init();
 
-	if (!LittleFS.begin()){
-		dbg_println(("Error mounting LittleFS, restarting..."));
-		delay(1000);
-		ESP.restart();
-		}   
 
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
@@ -206,6 +201,11 @@ void setup() {
 		// After you are done with web configuration, switch off the vario as the wifi radio
 		// consumes a lot of power.
 		audio_generate_tone(200, 3000);
+		if (!LittleFS.begin()){
+			dbg_println(("Error mounting LittleFS, restarting..."));
+			delay(1000);
+			ESP.restart();
+			}   
 		wificfg_ap_server_init(); 
 		}
   	else {
@@ -307,13 +307,13 @@ void vario_loop() {
 				SleepCounter = 0;
 				SleepTimeoutSecs++;
 				#ifdef IMU_DEBUG
-				float yaw, pitch, roll;
-				imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
+				//float yaw, pitch, roll;
+				//imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
 				// Pitch is positive for clockwise rotation about the NED frame +Y axis
 				// Roll is positive for clockwise rotation about the NED frame +X axis
 				// Yaw is positive for clockwise rotation about the NED frame +Z axis
 				// Magnetometer isn't used, so yaw is initialized to 0 for the "forward" direction of the case on power up.
-				dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
+				//dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
 				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
 				#ifdef CCT_DEBUG      
