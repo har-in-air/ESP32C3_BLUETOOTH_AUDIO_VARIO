@@ -22,7 +22,6 @@ const char* FwRevision = "0.90";
 MPU9250    Mpu9250;
 MS5611     Ms5611;
 
-int      	AppMode;
 boolean 	bWebConfigure = false;
 
 float AccelmG[3];  // milli-Gs
@@ -38,17 +37,14 @@ float 	 KfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
 int SleepCounter;
 int BaroCounter;
 int SleepTimeoutSecs;
+int DrdyCounter;
 
-#if (CFG_LANTERN == true)
-int LEDPwmLkp[4] = {LANTERN_DIM, LANTERN_LOW, LANTERN_MID, LANTERN_HI};
-int LanternState;
-#endif
-
-volatile int DrdyCounter = 0;
-volatile boolean DrdyFlag = false;
+volatile SemaphoreHandle_t DrdySemaphore;
 
 static void IRAM_ATTR drdy_interrupt_handler();
 static void time_init();
+static void vario_task(void * pvParameter);
+static void wifi_config_task(void * pvParameter);
 
 // pinPCC (GPIO9) has an external 10K pullup resistor to VCC
 // pressing the button  will ground the pin.
@@ -72,8 +68,11 @@ static void time_init();
 
 // handles data ready interrupt from MPU9250 (every 2ms)
 static void IRAM_ATTR drdy_interrupt_handler() {
-	DrdyFlag = true;
-	DrdyCounter++;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	xSemaphoreGiveFromISR(DrdySemaphore, &xHigherPriorityTaskWoken);
+    if( xHigherPriorityTaskWoken == pdTRUE) {
+        portYIELD_FROM_ISR(); // this wakes up vario_task immediately instead of on next FreeRTOS tick
+		}	
 	}	
 
 
@@ -113,12 +112,6 @@ void setup_vario() {
 		}
 	dbg_println(("MPU9250 OK"));
     
-	DrdyCounter = 0;
-	DrdyFlag = false;
-	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
-	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
-	pinMode(pinDRDYInt, INPUT); 
-	attachInterrupt(pinDRDYInt, drdy_interrupt_handler, RISING);
 
 	// configure MPU9250 to start generating gyro and accel data  
 	Mpu9250.config_accel_gyro();
@@ -135,7 +128,7 @@ void setup_vario() {
 
 	dbg_println(("\r\nKalmanFilter config"));
 	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, true, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
+	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
 
 	vaudio_config();  
 	time_init();
@@ -152,17 +145,6 @@ void setup_vario() {
 		dbg_println(("\r\nStarting Vario with Bluetooth LE disabled\r\n"));  
 		}
 	}
-
-#if (CFG_LANTERN == true)   
-void setup_lantern() {
-	ledcSetup(LED_CHANNEL, LED_FREQUENCY, LED_RESOLUTION);
-	ledcAttachPin(pinLED, LED_CHANNEL);	
-    dbg_println(("Lantern mode"));
-    LanternState = 0;
-    ledcWrite(LED_CHANNEL, LEDPwmLkp[LanternState]);
-    }
-#endif
-
 
 
 void setup() {
@@ -183,7 +165,6 @@ void setup() {
 	nvd_calib_load(Calib);
 	adc_init();
 
-
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
 	dbg_println(("until you hear a low-frequency tone. Then release the button"));
@@ -201,37 +182,46 @@ void setup() {
 		// After you are done with web configuration, switch off the vario as the wifi radio
 		// consumes a lot of power.
 		audio_generate_tone(200, 3000);
-		if (!LittleFS.begin()){
-			dbg_println(("Error mounting LittleFS, restarting..."));
-			delay(1000);
-			ESP.restart();
-			}   
-		wificfg_ap_server_init(); 
+    	xTaskCreate( wifi_config_task, "wifi_config_task", 4096, NULL, WIFI_CFG_TASK_PRIORITY, NULL );
 		}
   	else {
 		dbg_println(("Vario mode"));
-    	ui_indicate_battery_voltage();
-    	switch (AppMode) {
-			case APP_MODE_VARIO :
-			default :
-			setup_vario();
-			break;
-
-#if (CFG_LANTERN == true)
-			case APP_MODE_LANTERN :
-			setup_lantern();
-			break;
-#endif            
-			}
+    	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
 		}
-	ui_btn_init();	
+	vTaskDelete(NULL);
 	}
 
 
-void vario_loop() {
-	if (DrdyFlag == true) {
+void wifi_config_task(void * pvParameter) {
+	if (!LittleFS.begin()){
+		dbg_println(("Error mounting LittleFS, restarting..."));
+		delay(1000);
+		ESP.restart();
+		}   
+	wificfg_ap_server_init(); 
+	while (1) {
+		vTaskDelay(1);
+		}
+	vTaskDelete(NULL);
+	}
+
+
+void vario_task(void * pvParameter) {
+	ui_indicate_battery_voltage();
+	setup_vario();
+	ui_btn_init();	
+	DrdyCounter = 0;
+	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
+	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
+	pinMode(pinDRDYInt, INPUT); 
+    DrdySemaphore = xSemaphoreCreateBinary();
+	attachInterrupt(pinDRDYInt, drdy_interrupt_handler, RISING);
+
+	while (1) {
 		// MPU9250 500Hz ODR => 2mS sample interval
-		DrdyFlag = false;
+		// wait for data ready interrupt from MPU9250 
+		xSemaphoreTake(DrdySemaphore, portMAX_DELAY); 
+		DrdyCounter++;
 		time_update();
 		#ifdef CCT_DEBUG    
 		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
@@ -249,19 +239,19 @@ void vario_loop() {
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
 		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
-        float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
-        float gxned = DEG_TO_RAD*GyroDps[0];
-        float gyned = DEG_TO_RAD*GyroDps[1];
-        float gzned = -DEG_TO_RAD*GyroDps[2];
-        float axned = AccelmG[1];
-        float ayned = AccelmG[0];
-        float azned = AccelmG[2];
+		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
+		float gxned = DEG_TO_RAD*GyroDps[0];
+		float gyned = DEG_TO_RAD*GyroDps[1];
+		float gzned = -DEG_TO_RAD*GyroDps[2];
+		float axned = AccelmG[1];
+		float ayned = AccelmG[0];
+		float azned = AccelmG[2];
 		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
 		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
 		BaroCounter++;
 		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
-		int32_t climbrate;
+		static int32_t climbrate;
 		if (BaroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
 			BaroCounter = 0;    // alternating between pressure and temperature samples
 			// one altitude sample is calculated for every new pair of pressure & temperature samples
@@ -317,101 +307,18 @@ void vario_loop() {
 				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
 				#endif     
 				#ifdef CCT_DEBUG      
-                // The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
-                // We need to read the MPU9250 data, MS5611 data and finish all computations
-                // and actions well within this interval.
-                // last checked, < 620 uS @ 80MHz clock
+				// The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
+				// We need to read the MPU9250 data, MS5611 data and finish all computations
+				// and actions well within this interval.
+				// last checked, ~750 uS @ 80MHz clock
 				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); 
 				#endif
 				}
 			}
-		}	
-#if (CFG_LANTERN == true)
-	if (BtnPCCLongPress == true) {
-		AppMode = APP_MODE_LANTERN;
-		setup_lantern();
-		delay(500);
-		ui_btn_clear();    
-		}  
-#endif        
-	}
-
-
-#if (CFG_LANTERN == true)
-void lantern_loop() {
-	int count;
-	if (BtnPCCPressed) {
-		ui_btn_clear();
-		LanternState++;
-		if (LanternState > 4) {
-			LanternState = 0;
-			}
-		if (LanternState < 4) {
-		    ledcWrite(LED_CHANNEL, LEDPwmLkp[LanternState]);
-			}
 		}
-	if (LanternState == 4) {
-		// flash S.O.S. pattern
-		count = 3;
-		while (count--) {
-			if (BtnPCCPressed) return;
-		    ledcWrite(LED_CHANNEL, LANTERN_HI);
-			delay(50);
-		    ledcWrite(LED_CHANNEL, 0);
-			delay(400);
-			}
-		count = 12;
-		while (count--) {
-			if (BtnPCCPressed) return;
-			delay(50);        
-			}
-		count = 3;
-		while (count--) {
-			if (BtnPCCPressed) return;
-		    ledcWrite(LED_CHANNEL, LANTERN_HI);
-			delay(1000);
-		    ledcWrite(LED_CHANNEL, 0);
-			delay(400);
-			}
-		count = 12;
-		while (count--) {
-			if (BtnPCCPressed) return;
-			delay(50);        
-			}
-		count = 3;
-		while (count--) {
-			if (BtnPCCPressed) return;
-		    ledcWrite(LED_CHANNEL, LANTERN_HI);
-			delay(50);
-		    ledcWrite(LED_CHANNEL, 0);
-			delay(400);
-			}
-		count = 80;
-		while (count--) {
-			if (BtnPCCPressed) return;
-			delay(50);
-			}    
-		}
+	vTaskDelete(NULL);
 	}
-#endif
 
 
 void loop(){
-	if (bWebConfigure == true) {
-		// nothing to do here, async web server runs in its own thread
-		}
-	else { 
-		switch (AppMode) {
-			case APP_MODE_VARIO :
-			default :
-			vario_loop();
-			break;
-
-#if (CFG_LANTERN == true)
-			case APP_MODE_LANTERN :
-			lantern_loop();
-			break;      
-#endif            
-			}
-		} 
 	}

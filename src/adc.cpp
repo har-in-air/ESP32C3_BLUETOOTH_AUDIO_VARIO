@@ -34,7 +34,7 @@ float adc_battery_voltage(int sample) {
 	}
 
 float adc_battery_voltage() {
-	int	adcSample = adc1_get_raw(CHAN_VBAT);
+	int	adcSample = adc1_get_raw(CHAN_VBAT) / 4;
 	float slope = (V2 - V1)/(ADC2 - ADC1);
 	float voltage = slope*((float)adcSample - ADC1) + V1;
 	return voltage;

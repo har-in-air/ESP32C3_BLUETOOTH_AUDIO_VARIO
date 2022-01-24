@@ -4,7 +4,6 @@
 // define as true if you want the associated feature support in the  code. 
 
 #define CFG_L9110S      true
-#define CFG_LANTERN     false
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -17,17 +16,8 @@
 #if (CFG_L9110S == true)
     #define pinL9110Pwr  3
 #endif
-#if (CFG_LANTERN == true)
-    #define pinLED      5
-	#define LED_CHANNEL		3
-	#define LED_FREQUENCY	1000
-	#define LED_RESOLUTION	8
-#endif
 
 #define BTN_PCC()  (digitalRead(pinPCC) == HIGH ? 1 : 0)
-
-#define APP_MODE_VARIO   11
-#define APP_MODE_LANTERN 22
 
 ////////////////////////////////////////////////////////////////////
 // WEB CONFIGURATION PARAMETER DEFAULTS AND LIMITS
@@ -86,6 +76,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // COMPILED CONFIGURATION PARAMETERS ( cannot be changed with web configuration )
+#define WIFI_CFG_TASK_PRIORITY 		1
+#define VARIO_TASK_PRIORITY 	(configMAX_PRIORITIES-1)
+
 
 // change these parameters based on the frequency bandwidth of the speaker
 #define VARIO_SPKR_MIN_FREQHZ      	200
@@ -142,6 +135,7 @@
 // enclosed debug prints are in the critical run-time loop.
 //#define IMU_DEBUG
 //#define CCT_DEBUG
+//#define BLE_DEBUG
 
 
 #endif

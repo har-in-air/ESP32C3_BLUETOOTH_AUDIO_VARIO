@@ -65,6 +65,9 @@ void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batVoltage) {
 	char szcksum[5];
 	sprintf(szcksum,"%02X\r\n", cksum);
 	strcat(szmsg, szcksum);
+#ifdef BLE_DEBUG	
+    dbg_printf(("%s", szmsg)); 
+#endif
 	pTxCharacteristic->setValue((const uint8_t*)szmsg, strlen(szmsg));
 	pTxCharacteristic->notify();   
 	}
