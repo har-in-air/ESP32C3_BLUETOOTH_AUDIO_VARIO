@@ -9,7 +9,8 @@ accurate barometric altitude and climb/sink rate data.
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
-* Visual Studio Code with PlatformIO plugin using Arduino framework targeting `esp32dev` board. The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. 
+* [Visual Studio Code with PlatformIO plugin using Arduino framework](https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/) 
+* The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. 
 * ~128kByte LittleFS partition for hosting HTML web server pages
 
 # Hardware
