@@ -19,20 +19,17 @@ NimBLEService* pService                 = NULL;
 NimBLECharacteristic* pTxCharacteristic = NULL;
 NimBLECharacteristic* pRxCharacteristic = NULL;
 
-//bool deviceConnected = false;
-//bool oldDeviceConnected = false;
 static uint8_t ble_uart_nmea_checksum(const char *szNMEA);
 
 void ble_uart_init() {
 	NimBLEDevice::init("BLE-Vario");
 	NimBLEDevice::setMTU(46);
-	NimBLEDevice::setPower(ESP_PWR_LVL_P9);
+	NimBLEDevice::setPower(ESP_PWR_LVL_N27);
 	NimBLEDevice::setSecurityAuth(true, true, true);
 	NimBLEDevice::setSecurityPasskey(123456);
 	NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
 
 	pBLEServer = NimBLEDevice::createServer();
-	//pBLEServer->setCallbacks(new MyServerCallbacks());
 
 	pService          = pBLEServer->createService(SERVICE_UUID);
 	pTxCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_TX, NIMBLE_PROPERTY::NOTIFY);
@@ -41,7 +38,6 @@ void ble_uart_init() {
 		CHARACTERISTIC_UUID_RX,
 		NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC | NIMBLE_PROPERTY::WRITE_AUTHEN);
 
-	//pRxCharacteristic->setCallbacks(new MyCallbacks());
 	pService->start();
 	pBLEServer->getAdvertising()->start();
 	}
