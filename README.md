@@ -7,7 +7,7 @@
 * WiFi Over-the-air (OTA) firmware update 
 * Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with 
 accurate barometric pressure altitude and climb-rate data.
-* PCB layout for standard Hammond enclosure
+* [PCB layout for standard Hammond enclosure](https://github.com/har-in-air/VhARIO-ESPC3)
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
@@ -21,8 +21,7 @@ accurate barometric pressure altitude and climb-rate data.
 * CJMCU-117 10-DOF IMU module with MPU9250 and MS5611 sensors
 * 74HC240 used as a push-pull driver for louder volume 
 * KPEG006 broadband-audio piezo buzzer
-* Kicad 6 schematic and PCB layout
-* Hammond 1551K enclosure 80x40x20mm 
+* Kicad 6 schematic and PCB layout sized for Hammond 1551K enclosure (80x40x20mm )
 
 # Hardware Notes
 
