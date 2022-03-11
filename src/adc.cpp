@@ -7,7 +7,7 @@
 void adc_init() {
     adc1_config_width(ADC_WIDTH_BIT_12); // no 10-bit resolution option !?
 	// need to ensure maximum voltage at adc pin is < 800mV for ATTEN_DB_0
-    adc1_config_channel_atten(CHAN_VBAT, ADC_ATTEN_DB_6);
+    adc1_config_channel_atten(CHAN_VBAT, ADC_ATTEN_DB_0);
     }
 
 int adc_sample_average() {
@@ -21,11 +21,11 @@ int adc_sample_average() {
 	}
 
 
-// two-point calibration for slope & intercept
-#define V1  3.290f
-#define ADC1  475.0f
-#define V2  4.060f
-#define ADC2  583.0f
+// two-point calibration for slope & intercept using ATTEN_DB_0, 10bit resolution
+#define V1		3.278f
+#define ADC1	750.0f
+#define V2		4.020f
+#define ADC2	924.0f
 
 float adc_battery_voltage(int sample) {
 	float slope = (V2 - V1)/(ADC2 - ADC1);

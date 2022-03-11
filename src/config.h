@@ -1,23 +1,31 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-// define as true if you want the associated feature support in the  code. 
+#define pinPCC		9	// program/configure/calibrate button
+#define pinAudio	4	// pwm beeper audio output
+#define pinAudioEn	3	// 74HC240 output enables, active low
 
-#define CFG_L9110S      true
+#define pinPwrSens	1	// detect power on/off button press
+#define pinPwrCtrl	2	// power on/off
 
-////////////////////////////////////////////////////////////////////////
-
-#define pinPCC       9
-#define pinSDA       7
-#define pinSCL       6
-#define pinDRDYInt   10
-#define pinAudio 	 4
-
-#if (CFG_L9110S == true)
-    #define pinL9110Pwr  3
-#endif
+#define pinCSB		5	// CSB (ms5611)
+#define pinMISO		7	// SDO ms5611 & AD0 mpu9250
+#define pinNCS		10 	// NCS (mpu9250)
+#define pinMOSI		18 	// SDA
+#define pinSCK		19	// SCL
+#define pinDRDYInt	6  	// INT
+#define pinLED		8	// power-on and bluetooth indication
 
 #define BTN_PCC()  (digitalRead(pinPCC) == HIGH ? 1 : 0)
+
+#define LED_ON() 	{digitalWrite(pinLED, 0); LEDState = 1;}
+#define LED_OFF() 	{digitalWrite(pinLED, 1); LEDState = 0;}
+
+#define AUDIO_ON() 		{digitalWrite(pinAudioEn, 0); AudioState = 1;}
+#define AUDIO_OFF() 	{digitalWrite(pinAudioEn, 1); AudioState = 0;}
+
+#define PWR_ON_DELAY_MS		1000
+#define PWR_OFF_DELAY_MS	2000
 
 ////////////////////////////////////////////////////////////////////
 // WEB CONFIGURATION PARAMETER DEFAULTS AND LIMITS
@@ -38,7 +46,6 @@
 #define VARIO_SINK_THRESHOLD_CPS_MIN    	-400
 #define VARIO_SINK_THRESHOLD_CPS_MAX    	-100
 
-
 // When generating climbtones, the vario allocates most of the speaker 
 // frequency bandwidth to climbrates below this crossover threshold 
 // so you have more frequency discrimination. So set the crossover threshold 
@@ -56,29 +63,29 @@
 #define KF_ZMEAS_VARIANCE_MIN        100
 #define KF_ZMEAS_VARIANCE_MAX        400
 
-// Sleep timeout. The vario will go into sleep mode
+// Power-off timeout. The vario will power down
 // if it does not detect climb or sink rates more than
-// SLEEP_THRESHOLD_CPS, for the specified minutes.
-// You can only exit  sleep mode by power cycling the unit.
-#define SLEEP_TIMEOUT_MINUTES_DEFAULT   15
-#define SLEEP_TIMEOUT_MINUTES_MIN       5
-#define SLEEP_TIMEOUT_MINUTES_MAX       30
+// PWR_OFF_THRESHOLD_CPS, for the specified minutes.
+#define PWR_OFF_TIMEOUT_MINUTES_DEFAULT   2
+#define PWR_OFF_TIMEOUT_MINUTES_MIN       2
+#define PWR_OFF_TIMEOUT_MINUTES_MAX       5
 
 // audio feedback tones
-#define BATTERY_TONE_HZ       400
-#define CALIBRATING_TONE_HZ   800
-#define UNCALIBRATED_TONE_HZ  2000
-#define MPU9250_ERROR_TONE_HZ   200 
-#define MS5611_ERROR_TONE_HZ    2500
-
+#define BATTERY_TONE_HZ			400
+#define CALIBRATING_TONE_HZ		800
+#define UNCALIBRATED_TONE_HZ	2000
+#define MPU9250_ERROR_TONE_HZ	200 
+#define MS5611_ERROR_TONE_HZ	2500
 
 #define BLE_DEFAULT  true
 
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // COMPILED CONFIGURATION PARAMETERS ( cannot be changed with web configuration )
-#define WIFI_CFG_TASK_PRIORITY 		1
-#define VARIO_TASK_PRIORITY 	(configMAX_PRIORITIES-1)
 
+#define PWR_CTRL_TASK_PRIORITY	1
+#define BLE_TASK_PRIORITY		2
+#define WIFI_CFG_TASK_PRIORITY	2
+#define VARIO_TASK_PRIORITY		(configMAX_PRIORITIES-1)
 
 // change these parameters based on the frequency bandwidth of the speaker
 #define VARIO_SPKR_MIN_FREQHZ      	200
@@ -99,7 +106,7 @@
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power
-#define SLEEP_THRESHOLD_CPS    50.0f
+#define PWR_OFF_THRESHOLD_CPS    50
 
 // if you find that gyro calibration fails even when you leave
 // the unit undisturbed, increase this offset limit
@@ -127,9 +134,8 @@
 
 // !! ensure these #defines are commented out after debugging, as the 
 // enclosed debug prints are in the critical run-time loop.
-//#define IMU_DEBUG
+#define IMU_DEBUG
 //#define PERF_DEBUG
 //#define BLE_DEBUG
-
 
 #endif

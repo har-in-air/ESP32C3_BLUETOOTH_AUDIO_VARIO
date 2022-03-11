@@ -7,6 +7,7 @@ static void audio_tone_off(int pin);
 
 static void audio_tone(int pin, int freqHz, int milliseconds) {
 	uint8_t channel = 0;
+	digitalWrite(pinAudioEn, 0);
 	ledcAttachPin(pin, channel);
 	ledcWriteTone(channel, freqHz);
 	delay(milliseconds);
@@ -20,6 +21,7 @@ static void audio_tone_off(int pin) {
 	ledcDetachPin(pin);
 	pinMode(pin, OUTPUT);
 	digitalWrite(pin, 0);
+	digitalWrite(pinAudioEn, 1);
 	}
 
 
@@ -35,15 +37,11 @@ void audio_set_frequency(int freqHz) {
 	uint8_t channel = 0;
 	ledcAttachPin(pinAudio, channel);
 	if (freqHz > 0) {
-		#if (CFG_L9110S == true)
-		digitalWrite(pinL9110Pwr, 1);
-		#endif	
+		digitalWrite(pinAudioEn, 0);
     	ledcWriteTone(channel, freqHz);	
 		}
 	else {
-		#if (CFG_L9110S == true)
-		digitalWrite(pinL9110Pwr, 0);
-		#endif	
+		digitalWrite(pinAudioEn, 1);
 		ledcWrite(channel, 0);
 		ledcDetachPin(pinAudio);
 		pinMode(pinAudio, OUTPUT);
@@ -53,12 +51,7 @@ void audio_set_frequency(int freqHz) {
 
 
 void audio_generate_tone(int freqHz, int ms) {
-	#if (CFG_L9110S == true)
-	digitalWrite(pinL9110Pwr, 1);
-	#endif	
+	digitalWrite(pinAudioEn, 0);
 	audio_tone(pinAudio, freqHz, ms);
-	delay(ms);
-	#if (CFG_L9110S == true)
-	digitalWrite(pinL9110Pwr, 0);
-	#endif	
+	digitalWrite(pinAudioEn, 1);
 	}

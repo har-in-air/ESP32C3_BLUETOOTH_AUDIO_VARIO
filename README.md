@@ -1,71 +1,41 @@
 # ESP32C3_BLUETOOTH_AUDIO_VARIO
- Accurate, zero-lag audio feedback variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
+ Accurate, zero-lag audio variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
  This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
-* WiFi webpage configuration with the vario acting as an access point and web server.
+
+ Other features :
+* WiFi Vario configuration via web page.
 * WiFi Over-the-air (OTA) firmware update 
-* Bluetooth LE transmission of $LK8EX1 sentences. You can then use flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with 
-accurate barometric altitude and climb/sink rate data.
-* Push-pull L9110S driver with conventional loudspeakers for higher audio volume. This is optional - you can drive a piezo buzzer directly from the ESP32-C3 pin for minimal component count at the cost of reduced audio volume.
+* Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with 
+accurate barometric pressure altitude and climb-rate data.
+* PCB layout for standard Hammond enclosure
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
 * [Visual Studio Code with PlatformIO plugin using Arduino framework](https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/) 
-* The file `platformio.ini` specifies the framework packages and toolchain required for the ESP32-C3, and the libraries used by the project. 
-* ~128kByte LittleFS partition for hosting HTML web server pages
+* The file `platformio.ini` specifies the framework packages, toolchain and libraries used by the project. 
+* LittleFS partition for hosting HTML web server pages
 
 # Hardware
 
-* ESP32-C3 12F 4MByte flash (AI Thinker)
+* AI-Thinker C3FN4 module (ESP32-C3, 4MByte flash)
 * CJMCU-117 10-DOF IMU module with MPU9250 and MS5611 sensors
-* L9110S IC used as a push-pull driver for louder volume 
+* 74HC240 used as a push-pull driver for louder volume 
+* KPEG006 broadband-audio piezo buzzer
+* Kicad 6 schematic and PCB layout
+* Hammond 1551K enclosure 80x40x20mm 
 
 # Hardware Notes
 
-## NCS pin pullup
-The CJMCU-117 `NCS` pin should be connected with a wire directly to the 
-CJMCU-117  LDO regulator 3.3V output.
-
-## I2C pullup resistors
-The 10K I2C pullup resistors on the CJMCU-117 board should be replaced with 3.3K for a reliable interface at 400kHz.
-
 ## LDO regulator specification
-The TLV75533 3.3V LDO regulator has a high current rating of 500mA and is suitable for the ESP32-C3 power supply, which has high current spikes on wifi transmit bursts. 
-
-## Optional Components
-The optional circuit components are marked with dashes on the schematic. Do not populate them if you don't need the L9110s loud(er) speaker driver option. 
-
-You can first test the board with a direct connection from AUD pin to a piezo speaker and the other piezo
-pin connected to ground. 
-If you mount the vario on your shoulder and/or have an open-face helmet, the volume level is probably enough without populating the L9110S push-pull driver circuit.
-
-If you want louder audio, install the L9110s circuit option. If this is still not loud enough, replace the piezo transducer with a magnetic coil loudspeaker of at least 8 ohms impedance. Make sure you use at least a 47 ohm resistor for R5 to keep current pulses manageable. 
-Ensure there is no air path from the front of the loudspeaker 
-to back or else the front wave will cancel the back wave. 
-Use silicone  to seal the edge of the speaker to the pcb, that will do the job. 
-Put some soft foam tape on the back of the speaker so that vibrations don't get transmitted 
-to the MPU9250 or MS5611.
-
-Replacement speaker-phone (NOT earpiece) drivers for mobile phones are a good choice.  You can put two in series for 16ohms impedance, but make sure they are in phase.
-
-A few components may not be readily available on Aliexpress/Ebay. You can find them on Mouser/Digikey :
-* Ferrite bead 600ohms@100MHz : BLM18AG601SN1D
-* TI TPS22918 high-side switch 
-* Broadband piezo speaker : PUI Audio AT2310TLW100R, Kingstate KPEG006 
+The TLV75533 3.3V LDO regulator has a low dropout voltage and current rating of 500mA.
 
 ## Current Drain
-
-18650 LiPoly battery, L9110S driving a PUI Audio piezo transducer, normal vario mode.
 
 With Bluetooth LE disabled, current drain is ~30mA.
 
 With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drain is ~85mA.
 
 # Software Build Notes
-
-## Compile Feature Options
-* Feature support compile options are in `config.h`
-* For a minimal audio vario with the ESP32-C3 directly driving a piezo transducer, set `CFG_L9110S` to false.
-If you want support for louder volume using the L9110S push-pull driver IC, set `CFG_L9110S` to true.   
 
 ## Build Steps
 * The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. 
@@ -94,7 +64,7 @@ To put the vario into WiFi AP server mode, switch on the vario and immediately p
 Connect to the WiFi Access Point `Vario-AP`, no password needed. 
 
 Open the url `http://192.168.4.1` in a browser.
-You can use `http://vario.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows install Bonjour.
+You can use `http://vario.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows, install Bonjour.
 
 You can now configure an external WiFi Access Point SSID and password. 
 Then you do not have to switch between your home WiFi network and the vario Access Point to be able to configure the vario. 
@@ -108,5 +78,15 @@ If the configured external AP is not available (or configured with wrong credent
 So you can still configure the vario in the field.
 
 <img src="docs/wifi_config_webpage.png">
+
+# Usage
+
+To power on, press the PWR button and hold until you see the power LED turn on. Release.
+
+If Bluetooth LE transmission is disabled, the power LED will stay on.
+
+If Bluetooth LE transmission is enabled, the power LED will blink rapidly once transmission starts.
+
+To power off, press the PWR button and hold until you see the LED turn off. Release.
 
 

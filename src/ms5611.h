@@ -28,14 +28,13 @@ public :
     void averaged_sample(int nSamples);
     void calculate_temperatureCx10(void);
     float calculate_pressurePa(void);
-    void calculate_sensor_noisePa(void);
+    void measure_noise(int nSamples);
     void reset(void);
 
     void get_calib_coefficients(void);
     float pa_to_cm(float pa);
-    void test(int nSamples);
     int  read_prom(void);
-    uint8_t crc4(uint8_t prom[] );
+    uint8_t crc4(uint16_t* prom);
     int  sample_state_machine(void);
     void init_sample_state_machine(void);
 
@@ -46,15 +45,15 @@ public :
     volatile int sensorState;
 
 private :
-    uint8_t prom_[16];
-    uint16_t cal_[6];
-    int64_t tref_;
-    int64_t offT1_;
-    int64_t sensT1_;
-    int32_t tempCx100_;
-    uint32_t D1_;
-    uint32_t D2_;
-    int64_t dT_;
+    uint16_t prom[8];
+    uint16_t cal[6];
+    int64_t tref;
+    int64_t offT1;
+    int64_t sensT1;
+    int32_t tempCx100;
+    uint32_t D1;
+    uint32_t D2;
+    int64_t dT;
     };
 
 #endif // MS5611_H_

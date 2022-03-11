@@ -3,3 +3,6 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+
+kicad/espc3-vario/espc3-vario-backups/**
+*.bak

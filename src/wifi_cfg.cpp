@@ -16,7 +16,6 @@ static const char* TAG = "wificfg";
 
 extern const char* FwRevision;
 
-
 const char* szAPSSID = "Vario-AP";
 const char* szAPPassword = ""; // no password for stand-alone access point
 
@@ -60,13 +59,17 @@ static String server_string_processor(const String& var){
 		return Config.cred.password;
 		}
 	else	
-    if(var == "SLEEP_MIN"){
-        return String(SLEEP_TIMEOUT_MINUTES_MIN);
+    if(var == "TIMEOUT_MIN"){
+        return String(PWR_OFF_TIMEOUT_MINUTES_MIN);
         }
     else
-    if(var == "SLEEP_MAX"){
-        return String(SLEEP_TIMEOUT_MINUTES_MAX);
+    if(var == "TIMEOUT_MAX"){
+        return String(PWR_OFF_TIMEOUT_MINUTES_MAX);
         }
+    else
+    if(var == "TIMEOUT"){
+        return String(Config.misc.pwrOffTimeoutMinutes);
+        }    
     else
     if(var == "AVAR_MIN"){
         return String(KF_ACCEL_VARIANCE_MIN);
@@ -74,6 +77,10 @@ static String server_string_processor(const String& var){
     else
     if(var == "AVAR_MAX"){
         return String(KF_ACCEL_VARIANCE_MAX);
+        }
+    else
+    if(var == "AVAR"){
+        return String(Config.kf.accelVariance);
         }
     else
     if(var == "ZVAR_MIN"){
@@ -84,12 +91,20 @@ static String server_string_processor(const String& var){
         return String(KF_ZMEAS_VARIANCE_MAX);
         }
     else
+    if(var == "ZVAR"){
+        return String(Config.kf.zMeasVariance);
+        }
+	else
     if(var == "CLIMB_MIN"){
         return String(VARIO_CLIMB_THRESHOLD_CPS_MIN);
         }
     else
     if(var == "CLIMB_MAX"){
         return String(VARIO_CLIMB_THRESHOLD_CPS_MAX);
+        }
+    else
+    if(var == "CLIMB"){
+        return String(Config.vario.climbThresholdCps);
         }
     else
     if(var == "ZERO_MIN"){
@@ -100,12 +115,20 @@ static String server_string_processor(const String& var){
         return String(VARIO_ZERO_THRESHOLD_CPS_MAX);
         }
     else
+    if(var == "ZERO"){
+        return String(Config.vario.zeroThresholdCps);
+        }
+    else
     if(var == "SINK_MIN"){
         return String(VARIO_SINK_THRESHOLD_CPS_MIN);
         }
     else
     if(var == "SINK_MAX"){
         return String(VARIO_SINK_THRESHOLD_CPS_MAX);
+        }
+    else
+    if(var == "SINK"){
+        return String(Config.vario.sinkThresholdCps);
         }
     else
     if(var == "XOVER_MIN"){
@@ -116,33 +139,9 @@ static String server_string_processor(const String& var){
         return String(VARIO_CROSSOVER_CPS_MAX);
         }
     else
-    if(var == "ACCEL_VARIANCE"){
-        return String(Config.kf.accelVariance);
-        }
-    else
-    if(var == "NOISE_VARIANCE"){
-        return String(Config.kf.zMeasVariance);
-        }
-    else
-    if(var == "CLIMB_THRESHOLD"){
-        return String(Config.vario.climbThresholdCps);
-        }
-    else
-    if(var == "ZERO_THRESHOLD"){
-        return String(Config.vario.zeroThresholdCps);
-        }
-    else
-    if(var == "SINK_THRESHOLD"){
-        return String(Config.vario.sinkThresholdCps);
-        }
-    else
-    if(var == "CROSSOVER_CLIMBRATE"){
+    if(var == "XOVER"){
         return String(Config.vario.crossoverCps);
         }
-    else
-    if(var == "SLEEP_TIMEOUT"){
-        return String(Config.misc.sleepTimeoutMinutes);
-        }    
 	else 
 	if (var == "BLE_OFF") {
 		return Config.misc.bleEnable ? "" : "checked";
@@ -244,40 +243,40 @@ static void get_handler(AsyncWebServerRequest *request) {
 		bChange = true; 
 		Config.misc.bleEnable = (inputMessage == "ble_on"); 
 		}
-	if (request->hasParam("climbThreshold")) {
-		inputMessage = request->getParam("climbThreshold")->value();
+	if (request->hasParam("climb")) {
+		inputMessage = request->getParam("climb")->value();
 		bChange = true; 
 		Config.vario.climbThresholdCps = inputMessage.toInt();
 		}
-	if (request->hasParam("sinkThreshold")) {
-		inputMessage = request->getParam("sinkThreshold")->value();
+	if (request->hasParam("sink")) {
+		inputMessage = request->getParam("sink")->value();
 		bChange = true; 
 		Config.vario.sinkThresholdCps = inputMessage.toInt();
 		}
-	if (request->hasParam("zeroThreshold")) {
-		inputMessage = request->getParam("zeroThreshold")->value();
+	if (request->hasParam("zero")) {
+		inputMessage = request->getParam("zero")->value();
 		bChange = true; 
 		Config.vario.zeroThresholdCps = inputMessage.toInt();
 		}
-	if (request->hasParam("crossoverClimbrate")) {
-		inputMessage = request->getParam("crossoverClimbrate")->value();
+	if (request->hasParam("xover")) {
+		inputMessage = request->getParam("xover")->value();
 		bChange = true; 
 		Config.vario.crossoverCps = inputMessage.toInt();
 		}
-	if (request->hasParam("accelVariance")) {
-		inputMessage = request->getParam("accelVariance")->value();
+	if (request->hasParam("avar")) {
+		inputMessage = request->getParam("avar")->value();
 		bChange = true; 
 		Config.kf.accelVariance = inputMessage.toInt();
 		}
-	if (request->hasParam("noiseVariance")) {
-		inputMessage = request->getParam("noiseVariance")->value();
+	if (request->hasParam("zvar")) {
+		inputMessage = request->getParam("zvar")->value();
 		bChange = true; 
 		Config.kf.zMeasVariance = inputMessage.toInt();
 		}
-	if (request->hasParam("sleepTimeout")) {
-		inputMessage = request->getParam("sleepTimeout")->value();
+	if (request->hasParam("timeout")) {
+		inputMessage = request->getParam("timeout")->value();
 		bChange = true; 
-		Config.misc.sleepTimeoutMinutes = inputMessage.toInt();
+		Config.misc.pwrOffTimeoutMinutes = inputMessage.toInt();
 		}
 
 	if (bChange == true) {

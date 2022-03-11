@@ -3,6 +3,7 @@
 #include <FS.h>
 #include <LittleFS.h>
 #include "config.h"
+#include "spi.h"
 #include "util.h"
 #include "imu.h"
 #include "mpu9250.h"
@@ -17,33 +18,25 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "0.90";
+const char* FwRevision = "0.91";
 
-MPU9250    Mpu9250;
-MS5611     Ms5611;
+MPU9250	Imu;
+MS5611	Baro;
 
-boolean 	bWebConfigure = false;
-
-float AccelmG[3];  // milli-Gs
-float GyroDps[3];  // degrees/second
-float KfAltitudeCm = 0.0f; // kalman filtered altitude in cm
-float KfClimbrateCps = 0.0f;  // kalman filtered climb/sink rate in cm/s
-
-uint32_t TimePreviousUs; // time markers
-uint32_t TimeNowUs;
-float 	 ImuTimeDeltaUSecs; // time between imu samples, in microseconds
-float 	 KfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
-
-int SleepCounter;
-int BaroCounter;
-int SleepTimeoutSecs;
-int DrdyCounter;
+boolean	bWebConfigure = false;
 
 volatile SemaphoreHandle_t DrdySemaphore;
+volatile int AltitudeM;
+volatile int ClimbrateCps;
+int LEDState;
+int AudioState;
 
 static void IRAM_ATTR drdy_interrupt_handler();
 static void vario_task(void * pvParameter);
 static void wifi_config_task(void * pvParameter);
+static void pwr_ctrl_task(void* pvParameter);
+static void ble_task(void* pvParameter);
+static void power_off();
 
 // pinPCC (GPIO9) has an external 10K pullup resistor to VCC
 // pressing the button  will ground the pin.
@@ -75,27 +68,33 @@ static void IRAM_ATTR drdy_interrupt_handler() {
 	}	
 
 
-inline void time_update(){
-	TimeNowUs = micros();
-	ImuTimeDeltaUSecs = TimeNowUs > TimePreviousUs ? (float)(TimeNowUs - TimePreviousUs) : 2000.0f; // if rollover use expected time difference
-	TimePreviousUs = TimeNowUs;
-	}
-
-
 void setup() {
-	pinMode(pinPCC, INPUT); //  Program/Configure/Calibrate Button
-#if (CFG_L9110S == true)
-	pinMode(pinL9110Pwr, OUTPUT);
-#endif	
+	pinMode(pinPCC, INPUT_PULLUP); //  Program/Configure/Calibrate Button
+	pinMode(pinPwrCtrl, OUTPUT); // soft-switch power on/off
+	digitalWrite(pinPwrCtrl, LOW);
+	pinMode(pinPwrSens, INPUT);
+
+	pinMode(pinLED, OUTPUT_OPEN_DRAIN);
+	LED_OFF();
+	pinMode(pinAudioEn, OUTPUT); // output enable for 74HC240
+	AUDIO_OFF();
+
 	wifi_off(); // turn off radio to save power
+
+	// need power butotn to be pressed for 1 second to switch on
+	delay(1000);
+	digitalWrite(pinPwrCtrl, HIGH);
+	LED_ON();
+	AUDIO_ON();
+	spi_init();
 
 #ifdef TOP_DEBUG    
 	Serial.begin(115200);
 #endif
-  
-	dbg_printf(("\r\n\r\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\r\n", __DATE__, __TIME__));
-	dbg_printf(("Firmware Revision %s\r\n", FwRevision));
-	dbg_println(("\r\nLoad non-volatile configuration and calibration data from flash"));  
+	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
+	dbg_printf(("Firmware Revision %s\n", FwRevision));
+
+	dbg_println(("\nLoad non-volatile configuration and calibration data from flash"));  
 	nvd_config_load(Config);
 	nvd_calib_load(Calib);
 	adc_init();
@@ -111,6 +110,8 @@ void setup() {
 			break;
 			}
 		}
+   	
+	xTaskCreate( pwr_ctrl_task, "pwr_ctrl_task", 1024, NULL, PWR_CTRL_TASK_PRIORITY, NULL );
 	if (bWebConfigure == true) {
 		dbg_println(("Web configuration mode"));
 		// 3 second long tone with low frequency to indicate unit is now in web server configuration mode.
@@ -122,13 +123,72 @@ void setup() {
   	else {
 		dbg_println(("Vario mode"));
     	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
+		if (Config.misc.bleEnable) {
+			xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
+			}
 		}
 	// delete the loopTask which called setup() from arduino app_main()
 	vTaskDelete(NULL);
 	}
 
 
-void wifi_config_task(void * pvParameter) {
+static void power_off() {
+	digitalWrite(pinPwrCtrl, LOW);
+	LED_OFF();
+	esp_deep_sleep_start(); // required as button is still pressed
+	}
+
+
+static void ble_task(void* pvParameter){
+	ble_uart_init();
+	dbg_println(("\nBluetooth LE LK8EX1 messages @ 10Hz\n"));
+	while (1) {
+		LEDState = !LEDState;
+		digitalWrite(pinLED, LEDState);
+		float batVoltage = adc_battery_voltage();
+		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, batVoltage);				
+		vTaskDelay(100/portTICK_PERIOD_MS);
+		}
+	}
+
+
+static void pwr_ctrl_task(void* pvParameter){
+	int state = 0;
+	int counter = 0;
+	int timeoutCounter = PWR_OFF_DELAY_MS/(10*portTICK_PERIOD_MS);
+
+	while (1) {
+		switch (state) {
+			case 0 :
+			default :  
+					if (digitalRead(pinPwrSens) == HIGH){
+						counter = 0;
+						state = 1;
+						}
+			break;
+				
+			case 1 : 
+					if (digitalRead(pinPwrSens) == HIGH){
+						counter++;
+						if (counter >= timeoutCounter) {
+							dbg_println(("Switching off power!"));
+							Serial.flush();
+							delay(100);
+							power_off();
+							}
+						}
+					else {
+						state = 0;
+						counter = 0;
+						}
+			break;
+				}
+		vTaskDelay(10);
+		}
+	}
+
+
+static void wifi_config_task(void * pvParameter) {
 	if (!LittleFS.begin()){
 		dbg_println(("Error mounting LittleFS, restarting..."));
 		delay(1000);
@@ -143,165 +203,155 @@ void wifi_config_task(void * pvParameter) {
 	}
 
 
-void vario_task(void * pvParameter) {
-	dbg_println(("Vario mode"));
+static void vario_task(void * pvParameter) {
+	float accelmG[3];  // milli-Gs
+	float gyroDps[3];  // degrees/second
+	float mag[3];      // unitless vector  
+	float kfAltitudeCm = 0.0f; // kalman filtered altitude in cm
+	float kfClimbrateCps = 0.0f;  // kalman filtered climb/sink rate in cm/s
+
+	uint32_t timePreviousUs, timeNowUs; // time markers
+	float imuTimeDeltaUSecs; // time between imu samples, in microseconds
+	float kfTimeDeltaUSecs; // time between kalman filter updates, in microseconds
+
+	int pwrOffCounter, baroCounter, drdyCounter;
+	int pwrOffTimeoutSecs;
 	ui_indicate_battery_voltage();
- 	Wire.begin(pinSDA, pinSCL);
-	Wire.setClock(400000); // set i2c clock frequency to 400kHz, AFTER Wire.begin()
-	dbg_println(("\r\nChecking communication with MS5611"));
-	if (!Ms5611.read_prom()) {
+
+	dbg_println(("\nChecking communication with MS5611"));
+	if (!Baro.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
 		Serial.flush();
 		ui_indicate_fault_MS5611(); 
-		ui_go_to_sleep();   // switch off and then on to fix this
+		power_off();
 		}
 	dbg_println(("MS5611 OK"));
   
-	dbg_println(("\r\nChecking communication with MPU9250"));
-	if (!Mpu9250.check_id()) {
+	dbg_println(("\nChecking communication with MPU9250"));
+	if (!Imu.check_id()) {
 		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
 		Serial.flush();
 		ui_indicate_fault_MPU9250();
-		ui_go_to_sleep();   // switch off and then on to fix this
+		power_off();
 		}
 	dbg_println(("MPU9250 OK"));
     
 	// configure MPU9250 to start generating gyro and accel data  
-	Mpu9250.config_accel_gyro();
+	Imu.config_accel_gyro_mag();
 
-	// calibrate gyro (and accel if required)
-	ui_calibrate_accel_gyro();
+	// calibrate gyro (accel + mag if required)
+	ui_calibrate_accel_gyro_mag();
 	delay(50);  
 	  
-	dbg_println(("\r\nMS5611 config"));
-	Ms5611.reset();
-	Ms5611.get_calib_coefficients(); // load MS5611 factory programmed calibration data
-	Ms5611.averaged_sample(4); // get an estimate of starting altitude
-	Ms5611.init_sample_state_machine(); // start the pressure & temperature sampling cycle
+	dbg_println(("\nMS5611 config"));
+	Baro.reset();
+	Baro.get_calib_coefficients(); // load MS5611 factory programmed calibration data
+	Baro.averaged_sample(4); // get an estimate of starting altitude
+	Baro.init_sample_state_machine(); // start the pressure & temperature sampling cycle
 
-	dbg_println(("\r\nKalmanFilter config"));
+	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Ms5611.altitudeCmAvg, 0.0f, 0.0f);
+	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Baro.altitudeCmAvg, 0.0f, 0.0f);
 
 	vaudio_config();  
-	TimeNowUs = TimePreviousUs = micros();
-	KfTimeDeltaUSecs = 0.0f;
-	BaroCounter = 0;
-	SleepCounter = 0;
-	SleepTimeoutSecs = 0;
+	timeNowUs = timePreviousUs = micros();
 	ringbuf_init(); 
-	if (Config.misc.bleEnable){
-		ble_uart_init();
-		dbg_println(("\r\nStarting Vario with Bluetooth LE LK8EX1 messages @ 10Hz\r\n"));
-		}
-	else {
-		dbg_println(("\r\nStarting Vario with Bluetooth LE disabled\r\n"));  
-		}
 	ui_btn_init();	
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
-	// pinDRDYInt (GPIO10) which has an external 10K pull-down resistor
+	// pinDRDYInt which has an external 10K pull-down resistor
 	pinMode(pinDRDYInt, INPUT); 
-	DrdyCounter = 0;
     DrdySemaphore = xSemaphoreCreateBinary();
+	baroCounter = pwrOffCounter = drdyCounter = 0;
+	pwrOffTimeoutSecs = 0;
+	kfTimeDeltaUSecs = imuTimeDeltaUSecs = 0.0f;
 	attachInterrupt(pinDRDYInt, drdy_interrupt_handler, RISING);
 
 	while (1) {
 		// MPU9250 500Hz ODR => 2mS sample interval
 		// wait for data ready interrupt from MPU9250 
 		xSemaphoreTake(DrdySemaphore, portMAX_DELAY); 
-		time_update();
-		DrdyCounter++;
-		#ifdef PERF_DEBUG    
-		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data (needs to be < 2mS !!)
-		#endif    
-		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
-		Mpu9250.get_accel_gyro_data(AccelmG, GyroDps); 
+		timeNowUs = micros();
+		imuTimeDeltaUSecs = timeNowUs > timePreviousUs ? (float)(timeNowUs - timePreviousUs) : 2000.0f; // if rollover use expected time difference
+		timePreviousUs = timeNowUs;
+		drdyCounter++;
+		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data
+		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second, mag samples are unitless
+		Imu.get_accel_gyro_mag_data(accelmG, gyroDps, mag); 
 
-		// We arbitrarily decide that the CJMCU-117 board silkscreen Y points "forward" or "north"  (the side with the HM-11), 
-		// silkscreen X points "right" or "east", and silkscreen Z points down. This is the North-East-Down (NED) 
-		// right-handed coordinate frame used in our AHRS algorithm implementation.
-		// The required mapping from sensor samples to NED frame for our specific board orientation is : 
-		// gxned = gx, gyned = gy, gzned = -gz (clockwise rotations about the axis must result in +ve readings on the axis)
-		// axned = ay, ayned = ax, azned = az (when the axis points down, axis reading must be +ve)
+		// We arbitrarily decide that the CJMCU-117 board silkscreen +Y points "forward" or "north", 
+		// silkscreen +X points "right" or "east", and silkscreen -Z points down. This is the North-East-Down (NED) 
+		// right-handed coordinate frame used in the AHRS algorithm implementation.
+		// The mapping from sensor frame to NED frame is : 
+		// gn = gy, ge = gx, gd = -gz  : clockwise rotations about the +axis must result in +ve readings
+		// an = -ay, ae = -ax, ad = az   : when the +axis points down, axis reading must be +ve max
+		// mn = mx, me = my, md = mz   : when the +axis points magnetic north, axis reading must be +ve max
 		// The AHRS algorithm expects rotation rates in radians/second
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
-		float accelMagnitudeSquared = AccelmG[0]*AccelmG[0] + AccelmG[1]*AccelmG[1] + AccelmG[2]*AccelmG[2];
+		float accelMagnitudeSquared = accelmG[0]*accelmG[0] + accelmG[1]*accelmG[1] + accelmG[2]*accelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
-		float dtIMU = ImuTimeDeltaUSecs/1000000.0f;
-		float gxned = DEG_TO_RAD*GyroDps[0];
-		float gyned = DEG_TO_RAD*GyroDps[1];
-		float gzned = -DEG_TO_RAD*GyroDps[2];
-		float axned = AccelmG[1];
-		float ayned = AccelmG[0];
-		float azned = AccelmG[2];
-		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gxned, gyned, gzned, axned, ayned, azned);
-		float gCompensatedAccel = imu_gravity_compensated_accel(axned, ayned, azned, Q0, Q1, Q2, Q3);
+		float dtIMU = imuTimeDeltaUSecs/1000000.0f;
+		float gn = DEG_TO_RAD*gyroDps[1];
+		float ge = DEG_TO_RAD*gyroDps[0];
+		float gd = -DEG_TO_RAD*gyroDps[2];
+		float an = -accelmG[1];
+		float ae = -accelmG[0];
+		float ad = accelmG[2];
+		float mn = mag[0];
+		float me = mag[1];
+		float md = mag[2];
+		imu_mahonyAHRS_update9DOF(bUseAccel, true, dtIMU, gn, ge, gd, an, ae, ad, mn, me, md);
+		float gCompensatedAccel = imu_gravity_compensated_accel(an, ae, ad, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
-		BaroCounter++;
-		KfTimeDeltaUSecs += ImuTimeDeltaUSecs;
-		static int32_t climbrate;
-		if (BaroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
-			BaroCounter = 0;    // alternating between pressure and temperature samples
+		baroCounter++;
+		kfTimeDeltaUSecs += imuTimeDeltaUSecs;
+		if (baroCounter >= 5) { // 5*2mS = 10mS elapsed, this is the sampling period for MS5611, 
+			baroCounter = 0;    // alternating between pressure and temperature samples
 			// one altitude sample is calculated for every new pair of pressure & temperature samples
-			int zMeasurementAvailable = Ms5611.sample_state_machine(); 
+			int zMeasurementAvailable = Baro.sample_state_machine(); 
 			if ( zMeasurementAvailable ) { 
 				// average earth-z acceleration over the 20mS interval between z samples
 				// is used in the kf algorithm update phase
 				float zAccelAverage = ringbuf_average_newest_samples(10); 
-				float dtKF = KfTimeDeltaUSecs/1000000.0f;
+				float dtKF = kfTimeDeltaUSecs/1000000.0f;
 				kalmanFilter4_predict(dtKF);
-				kalmanFilter4_update(Ms5611.altitudeCm, zAccelAverage, (float*)&KfAltitudeCm, (float*)&KfClimbrateCps);
+				kalmanFilter4_update(Baro.altitudeCm, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
 				// reset time elapsed between kalman filter algorithm updates
-				KfTimeDeltaUSecs = 0.0f;
-				climbrate = F_TO_I(KfClimbrateCps);
-				vaudio_tick_handler(climbrate); // audio feedback handler
-				if (ABS(climbrate) > SLEEP_THRESHOLD_CPS) { 
-					// reset sleep timeout watchdog if there is significant vertical motion
-					SleepTimeoutSecs = 0;
+				kfTimeDeltaUSecs = 0.0f;
+				AltitudeM = F_TO_I(kfAltitudeCm/100.0f);
+				ClimbrateCps = F_TO_I(kfClimbrateCps);
+				vaudio_tick_handler(ClimbrateCps); // audio feedback handler
+				if (ABS(ClimbrateCps) > PWR_OFF_THRESHOLD_CPS) { 
+					// reset pwrOff timeout watchdog if there is significant vertical motion
+					pwrOffTimeoutSecs = 0;
 					}
 				else
-				if (SleepTimeoutSecs >= (Config.misc.sleepTimeoutMinutes*60)) {
-					dbg_println(("Timed out with no significant climb/sink, put MPU9250 and ESP32-C3 to sleep to minimize current draw"));
+				if (pwrOffTimeoutSecs >= (Config.misc.pwrOffTimeoutMinutes*60)) {
+					dbg_println(("Timed out with no significant climb/sink, power down"));
 					Serial.flush();
-					ui_indicate_sleep(); 
-					ui_go_to_sleep();
+					ui_indicate_power_off();
+					power_off(); 
 					}   
 				}
 			}
 			
-	#ifdef PERF_DEBUG      
 		uint32_t elapsedUs =  micros() - marker; // calculate time  taken to read and process the data, must be less than 2mS
-	#endif
-		if (DrdyCounter >= 50) {
-			DrdyCounter = 0; // 0.1 second elapsed
-			if (Config.misc.bleEnable) {
-				float batVoltage = adc_battery_voltage();
-				float faltM = KfAltitudeCm/100.0f;
-				int altM =  F_TO_I(faltM);
-				ble_uart_transmit_LK8EX1(altM, climbrate, batVoltage);				
-				}
-			SleepCounter++;
-			if (SleepCounter >= 10) {
-				SleepCounter = 0;
-				SleepTimeoutSecs++;
-				#ifdef IMU_DEBUG
-				//float yaw, pitch, roll;
-				//imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
-				// Pitch is positive for clockwise rotation about the NED frame +Y axis
-				// Roll is positive for clockwise rotation about the NED frame +X axis
-				// Yaw is positive for clockwise rotation about the NED frame +Z axis
-				// Magnetometer isn't used, so yaw is initialized to 0 for the "forward" direction of the case on power up.
-				//dbg_printf(("\r\nY = %d P = %d R = %d\r\n", (int)yaw, (int)pitch, (int)roll));
-				dbg_printf(("ba = %d ka = %d kv = %d\r\n",(int)Ms5611.altitudeCm, (int)KfAltitudeCm, (int)KfClimbrateCps));
-				#endif     
-				#ifdef PERF_DEBUG      
-				// The raw IMU data rate is 500Hz, i.e. 2000uS between Data Ready Interrupts
-				// We need to read the MPU9250 data, MS5611 data and finish all computations
-				// and actions well within this interval.
-				// last checked, ~750 uS @ 80MHz clock
-				dbg_printf(("Elapsed %dus\r\n", (int)elapsedUs)); 
-				#endif
-				}
+		if (drdyCounter >= 500) {
+			drdyCounter = 0; // 1 second elapsed
+			pwrOffTimeoutSecs++;
+			#ifdef IMU_DEBUG
+			float yaw, pitch, roll;
+			imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
+			// Pitch is positive for clockwise rotation about the NED frame +Y axis
+			// Roll is positive for clockwise rotation about the NED frame +X axis
+			// Yaw is positive for clockwise rotation about the NED frame +Z axis
+			// If magnetometer isn't used, yaw is initialized to 0 on power up.
+			dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
+			dbg_printf(("kv = %d, timeout_counter = %d\n", (int)kfClimbrateCps, pwrOffTimeoutSecs));
+			//dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n",accelmG[0], accelmG[1], accelmG[2]));
+			//dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n",gyroDps[0], gyroDps[1], gyroDps[2]));
+			//dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
+			dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
+			#endif     
 			}
 		}
 	vTaskDelete(NULL);
