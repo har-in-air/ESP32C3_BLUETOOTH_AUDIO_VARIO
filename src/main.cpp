@@ -74,14 +74,14 @@ void setup() {
 	digitalWrite(pinPwrCtrl, LOW);
 	pinMode(pinPwrSens, INPUT);
 
-	pinMode(pinLED, OUTPUT_OPEN_DRAIN);
+	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // active low
 	LED_OFF();
-	pinMode(pinAudioEn, OUTPUT); // output enable for 74HC240
+	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
 	AUDIO_OFF();
 
 	wifi_off(); // turn off radio to save power
 
-	// need power butotn to be pressed for 1 second to switch on
+	// PWR button needs to be pressed for one second to switch on
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
 	LED_ON();
@@ -123,9 +123,6 @@ void setup() {
   	else {
 		dbg_println(("Vario mode"));
     	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
-		if (Config.misc.bleEnable) {
-			xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
-			}
 		}
 	// delete the loopTask which called setup() from arduino app_main()
 	vTaskDelete(NULL);
@@ -133,8 +130,11 @@ void setup() {
 
 
 static void power_off() {
-	digitalWrite(pinPwrCtrl, LOW);
+	Serial.flush();
+	delay(10);
 	LED_OFF();
+	AUDIO_OFF();
+	digitalWrite(pinPwrCtrl, LOW);
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
 
@@ -252,6 +252,10 @@ static void vario_task(void * pvParameter) {
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
 	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Baro.altitudeCmAvg, 0.0f, 0.0f);
+
+	if (Config.misc.bleEnable) {
+		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
+		}
 
 	vaudio_config();  
 	timeNowUs = timePreviousUs = micros();
