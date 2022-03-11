@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name "00_project_footprints")(type "KiCad")(uri "${KIPRJMOD}/libraries/hari.pretty")(options "")(descr ""))
-)
