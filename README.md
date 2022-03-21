@@ -10,7 +10,7 @@ accurate barometric pressure altitude and climb-rate data.
 * Soft power on/off button.
 * No-activity power-down to save battery life.
 * USB-C Li-poly battery charging at up to 500mA.
-* [Kicad schematic, and PCB layout sized for a standard Hammond 1551K enclosure](https://github.com/har-in-air/VhARIO-ESPC3)
+* PCB sized for standard Hammond enclosure.
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
@@ -20,16 +20,15 @@ accurate barometric pressure altitude and climb-rate data.
 
 # Hardware
 
-* AI-Thinker C3FN4 module (ESP32-C3, 4MByte flash)
-* CJMCU-117 10-DOF IMU module with MPU9250 and MS5611 sensors
-* 74HC240 used as a push-pull driver for louder volume 
-* KPEG006 broadband-audio piezo buzzer
-* Kicad 6 schematic and PCB layout sized for Hammond 1551K enclosure (80x40x20mm )
-
-# Hardware Notes
-
-## LDO regulator specification
-The TLV75533 3.3V LDO regulator has a low dropout voltage and current rating of 500mA.
+* AI-Thinker ESP-C3-12F C3FN4 module (4MByte flash, Wi-Fi and Bluetooth LE)
+* CJMCU-117 module with MPU9250 9-DOF IMU and MS5611 barometric pressure sensor
+* KPEG006 broadband-audio piezo transducer
+* 74HC240 used as a push-pull piezo driver for louder volume 
+* MCP73871 Li-poly battery charger, max 500mA charging current
+* 1800mAHr Lipoly battery
+* Hammond 1551K standard size enclosure (80 x 40 x 20mm). 
+* TLV75533 LDO regulator, max current 500mA
+* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
 
 ## Current Drain
 
@@ -83,12 +82,15 @@ So you can still configure the vario in the field.
 
 # Usage
 
+## Power on and off
 To power on, press the PWR button and hold until you see the power LED turn on. Release.
 
-If Bluetooth LE transmission is disabled, the power LED will stay on.
-
-If Bluetooth LE transmission is enabled, the power LED will blink rapidly once transmission starts.
+If Bluetooth transmission is enabled, the power LED will start blinking once transmission starts, else it will stay on.
 
 To power off, press the PWR button and hold until you see the LED turn off. Release.
+
+## Audio mute toggle
+A brief press of the PCC button while the vario is operational will toggle the audio on and off.
+This is convenient if you have set the zeros threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are on launch.
 
 
