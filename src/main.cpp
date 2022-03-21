@@ -18,7 +18,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "0.91";
+const char* FwRevision = "0.93";
 
 MPU9250	Imu;
 MS5611	Baro;
@@ -216,9 +216,10 @@ static void vario_task(void * pvParameter) {
 
 	int pwrOffCounter, baroCounter, drdyCounter;
 	int pwrOffTimeoutSecs;
+	dbg_println(("\nAudio indication of battery voltage"));
 	ui_indicate_battery_voltage();
 
-	dbg_println(("\nChecking communication with MS5611"));
+	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
 		Serial.flush();
@@ -227,7 +228,7 @@ static void vario_task(void * pvParameter) {
 		}
 	dbg_println(("MS5611 OK"));
   
-	dbg_println(("\nChecking communication with MPU9250"));
+	dbg_println(("\nCheck communication with MPU9250"));
 	if (!Imu.check_id()) {
 		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
 		Serial.flush();
@@ -282,18 +283,20 @@ static void vario_task(void * pvParameter) {
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second, mag samples are unitless
 		Imu.get_accel_gyro_mag_data(accelmG, gyroDps, mag); 
 
-		// We arbitrarily decide that the CJMCU-117 board silkscreen +Y points "forward" or "north", 
-		// silkscreen +X points "right" or "east", and silkscreen -Z points down. This is the North-East-Down (NED) 
+		// W.r.t. the CJMCU-117 board mounting on the VhARIO-ESPC3 PCB layout,
+		// we arbitrarily decide that the CJMCU-117 board silkscreen -X points "forward" or "north", 
+		// silkscreen -Y points "right" or "east", and silkscreen +Z points down. This is the North-East-Down (NED) 
 		// right-handed coordinate frame used in the AHRS algorithm implementation.
 		// The mapping from sensor frame to NED frame is : 
-		// gn = gy, ge = gx, gd = -gz  : clockwise rotations about the +axis must result in +ve readings
-		// an = -ay, ae = -ax, ad = az   : when the +axis points down, axis reading must be +ve max
-		// mn = mx, me = my, md = mz   : when the +axis points magnetic north, axis reading must be +ve max
+		// gn = gx, ge = -gy, gd = gz  : clockwise rotations about the + ned axis must result in +ve readings
+		// an = ax, ae = ay, ad = -az   : when the + ned axis points down, axis reading must be +ve max
+		// mn = -my, me = -mx, md = -mz   : when the + ned axis points magnetic north, axis reading must be +ve max
 		// The AHRS algorithm expects rotation rates in radians/second
 		// Acceleration data is only used for orientation correction when the acceleration magnitude is between 0.75G and 1.25G
 		float accelMagnitudeSquared = accelmG[0]*accelmG[0] + accelmG[1]*accelmG[1] + accelmG[2]*accelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
 		float dtIMU = imuTimeDeltaUSecs/1000000.0f;
+#if 0		
 		float gn = DEG_TO_RAD*gyroDps[1];
 		float ge = DEG_TO_RAD*gyroDps[0];
 		float gd = -DEG_TO_RAD*gyroDps[2];
@@ -303,6 +306,17 @@ static void vario_task(void * pvParameter) {
 		float mn = mag[0];
 		float me = mag[1];
 		float md = mag[2];
+#else
+		float gn = DEG_TO_RAD*gyroDps[0];
+		float ge = -DEG_TO_RAD*gyroDps[1];
+		float gd = DEG_TO_RAD*gyroDps[2];
+		float an = accelmG[0];
+		float ae = accelmG[1];
+		float ad = -accelmG[2];
+		float mn = -mag[1];
+		float me = -mag[0];
+		float md = -mag[2];
+#endif
 		imu_mahonyAHRS_update9DOF(bUseAccel, true, dtIMU, gn, ge, gd, an, ae, ad, mn, me, md);
 		float gCompensatedAccel = imu_gravity_compensated_accel(an, ae, ad, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
@@ -343,18 +357,18 @@ static void vario_task(void * pvParameter) {
 			drdyCounter = 0; // 1 second elapsed
 			pwrOffTimeoutSecs++;
 			#ifdef IMU_DEBUG
-			float yaw, pitch, roll;
-			imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
+			//float yaw, pitch, roll;
+			//imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
 			// Pitch is positive for clockwise rotation about the NED frame +Y axis
 			// Roll is positive for clockwise rotation about the NED frame +X axis
 			// Yaw is positive for clockwise rotation about the NED frame +Z axis
 			// If magnetometer isn't used, yaw is initialized to 0 on power up.
-			dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
-			dbg_printf(("kv = %d, timeout_counter = %d\n", (int)kfClimbrateCps, pwrOffTimeoutSecs));
+			//dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
+			//dbg_printf(("kv = %d, timeout_counter = %d\n", (int)kfClimbrateCps, pwrOffTimeoutSecs));
 			//dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n",accelmG[0], accelmG[1], accelmG[2]));
 			//dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n",gyroDps[0], gyroDps[1], gyroDps[2]));
-			//dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
-			dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
+			dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
+			//dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
 			#endif     
 			}
 		}

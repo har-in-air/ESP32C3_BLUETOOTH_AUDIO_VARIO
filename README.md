@@ -4,10 +4,10 @@
 
  Other features :
 * WiFi Vario configuration via web page.
-* WiFi Over-the-air (OTA) firmware update 
-* Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument apps like [XCTrack](https://xctrack.org/) on a smartphone/tablet with 
+* WiFi Over-the-air (OTA) firmware updates. 
+* Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument Android apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
-* [PCB layout for standard Hammond enclosure](https://github.com/har-in-air/VhARIO-ESPC3)
+* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
@@ -51,7 +51,7 @@ Fix the error by replacing 0U with (uint32_t)0.
 * From now on, only select `General -> Clean` to avoid pulling in the original library source code again.
 * Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
-[This is a startup serial monitor log after a full flash erase.](docs/first_boot_log.txt). 
+[This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
 * [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/normal_boot_log.txt). 
 

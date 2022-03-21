@@ -78,25 +78,25 @@ void kalmanFilter4_configure(float zSensorVariance, float aVariance, bool bAdapt
     State.a = aInitial;
 	State.b = 0.0f; // assume residual acceleration bias = 0 initially
 
-	Pzz = 1000.0f;
+	Pzz = 1500.0f;
     Pzv = 0.0f;
 	Pza = 0.0f;
 	Pzb = 0.0f;
 	
 	Pvz = Pzv; 
-	Pvv = 1000.0f;
+	Pvv = 1500.0f;
 	Pva = 0.0f;
 	Pvb = 0.0f;
 	
 	Paz = Pza;
 	Pav = Pva;
-	Paa = 50000.0f;
+	Paa = 100000.0f;
 	Pab = 0.0f;
 
 	Pbz = Pzb;
 	Pbv = Pvb;
 	Pba = Pab;
-	Pbb = 1000.0f;
+	Pbb = 1500.0f;
 	}
 
 
@@ -190,9 +190,10 @@ void kalmanFilter4_update(float zm, float am, float* pz, float* pv) {
 	s00 = s00 + ZSensorVariance;
 	if (UseAdaptiveVariance) {	
 		float accel_ext = (am-State.b)*(am-State.b);
+		// inject additional uncertainty depending on the magnitude of the external acceleration.
 		// allows filter  to respond quickly to moderate/large accelerations while heavily filtering out noise
 		// when there is low or no acceleration
-		s11 = s11 + accel_ext;
+		s11 = s11 + KF_ADAPTIVE_ACCEL_FACTOR*accel_ext;
 		// allow system to update estimated bias only when there is low acceleration
 		BiasVariance = 1.0f/(1.0f + 2.0f*accel_ext);	
 		}

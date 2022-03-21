@@ -104,6 +104,12 @@
 // KF4 Acceleration Update variance default
 #define KF_ACCEL_UPDATE_VARIANCE   50.0f
 
+// injects additional uncertainty depending on magnitude of acceleration
+// helps respond quickly to large accelerations while heavily filtering
+// in low o no acceleration situations.  Range : 0.0 (no adaptation)
+// to 1.0 (max adaptive factor)
+#define KF_ADAPTIVE_ACCEL_FACTOR			0.5f
+
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power
 #define PWR_OFF_THRESHOLD_CPS    50

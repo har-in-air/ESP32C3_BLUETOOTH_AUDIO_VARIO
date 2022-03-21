@@ -26,20 +26,20 @@ MPU9250::MPU9250() {
 
 void MPU9250::get_accel_gyro_data(float* pAccelData, float* pGyroData) {
 	uint8_t buf[14];
-	int16_t raw[3];
+	int16_t x,y,z;
 	spi_read_buffer(spiImu, R_ACCEL_XOUT_H  | SPI_READ, 14, buf);
-	raw[0] = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
-	raw[1] = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
-	raw[2] = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
-	pAccelData[0] = (float)(raw[0] - axBias) * aScale;
-	pAccelData[1] = (float)(raw[1] - ayBias) * aScale;
-	pAccelData[2] = (float)(raw[2] - azBias) * aScale;
-	raw[0] = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
-	raw[1] = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
-	raw[2] = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
-	pGyroData[0] = (float)(raw[0] - gxBias) * gScale;
-	pGyroData[1] = (float)(raw[1] - gyBias) * gScale;
-	pGyroData[2] = (float)(raw[2] - gzBias) * gScale;
+	x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
+	y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
+	z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
+	pAccelData[0] = (float)(x - axBias) * aScale;
+	pAccelData[1] = (float)(y - ayBias) * aScale;
+	pAccelData[2] = (float)(z - azBias) * aScale;
+	x = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
+	y = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
+	z = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
+	pGyroData[0] = (float)(x - gxBias) * gScale;
+	pGyroData[1] = (float)(y - gyBias) * gScale;
+	pGyroData[2] = (float)(z - gzBias) * gScale;
 	}
 
 
