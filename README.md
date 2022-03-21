@@ -1,13 +1,16 @@
 # ESP32C3_BLUETOOTH_AUDIO_VARIO
  Accurate, zero-lag audio variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
- This project uses the KF4D kalman filter algorithm from the [ESP32_IMU_GPS_BARO_VARIO](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO) project.
+ This project uses the [KF4D kalman filter algorithm from the ESP32_IMU_GPS_BARO_VARIO project](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO/blob/master/offline/kf/compare_kf2_kf3_kf4.ipynb).
 
  Other features :
 * WiFi Vario configuration via web page.
 * WiFi Over-the-air (OTA) firmware updates. 
 * Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument Android apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
-* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
+* Soft power on/off button.
+* No-activity power-down to save battery life.
+* USB-C Li-poly battery charging at up to 500mA.
+* [Kicad schematic, and PCB layout sized for a standard Hammond 1551K enclosure](https://github.com/har-in-air/VhARIO-ESPC3)
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
