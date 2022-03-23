@@ -24,55 +24,8 @@ MPU9250::MPU9250() {
 	}
 
 
-void MPU9250::get_accel_gyro_data(float* pAccelData, float* pGyroData) {
-	uint8_t buf[14];
-	int16_t x,y,z;
-	spi_read_buffer(spiImu, R_ACCEL_XOUT_H  | SPI_READ, 14, buf);
-	x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
-	y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
-	z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
-	pAccelData[0] = (float)(x - axBias) * aScale;
-	pAccelData[1] = (float)(y - ayBias) * aScale;
-	pAccelData[2] = (float)(z - azBias) * aScale;
-	x = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
-	y = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
-	z = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
-	pGyroData[0] = (float)(x - gxBias) * gScale;
-	pGyroData[1] = (float)(y - gyBias) * gScale;
-	pGyroData[2] = (float)(z - gzBias) * gScale;
-	}
 
 
-void MPU9250::get_accel_gyro_mag_data(float* pAccelData, float* pGyroData, float* pMagData) {
-	uint8_t buf[20];
-	int16_t x,y,z;
-	spi_read_buffer(spiImu, R_ACCEL_XOUT_H  | SPI_READ, 20, buf);
-	x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
-	y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
-	z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
-	pAccelData[0] = (float)(x - axBias) * aScale;
-	pAccelData[1] = (float)(y - ayBias) * aScale;
-	pAccelData[2] = (float)(z - azBias) * aScale;
-	
-	x = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
-	y = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
-	z = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
-	pGyroData[0] = (float)(x - gxBias) * gScale;
-	pGyroData[1] = (float)(y - gyBias) * gScale;
-	pGyroData[2] = (float)(z - gzBias) * gScale;
-
-	// mag data is little endian	
-	x = (int16_t)(((uint16_t)buf[15] << 8) | (uint16_t)buf[14]);
-	y = (int16_t)(((uint16_t)buf[17] << 8) | (uint16_t)buf[16]);
-	z = (int16_t)(((uint16_t)buf[19] << 8) | (uint16_t)buf[18]);	
-	int xi = ((int)x * (asaX+128))/256;
-	int yi = ((int)y * (asaY+128))/256;
-	int zi = ((int)z * (asaZ+128))/256;
-
-	pMagData[0] = (float)(xi - mxBias) * mxScale;
-	pMagData[1] = (float)(yi - myBias) * myScale;
-	pMagData[2] = (float)(zi - mzBias) * mzScale;	
-	}
 
 
 int MPU9250::check_id(void) {
@@ -89,19 +42,23 @@ void MPU9250::get_calib_params(CALIB_PARAMS_t &calib) {
 	gxBias = calib.gxBias;
 	gyBias = calib.gyBias;
 	gzBias = calib.gzBias;
+#ifdef USE_9DOF_AHRS	
 	mxBias = calib.mxBias;
 	myBias = calib.myBias;
 	mzBias = calib.mzBias;
 	mxScale = calib.mxScale;
 	myScale = calib.myScale;
 	mzScale = calib.mzScale;
+#endif
 
 #ifdef MPU9250_DEBUG
 	dbg_println(("Calibration parameters from NVD"));
 	dbg_printf(("axBias %d, ayBias %d, azBias %d\n",axBias, ayBias, azBias));
 	dbg_printf(("gxBias %d, gyBias %d, gzBias %d\n",gxBias, gyBias, gzBias));
+#ifdef USE_9DOF_AHRS	
 	dbg_printf(("mxBias %d, myBias %d, mzBias %d\n",mxBias, myBias, mzBias));
 	dbg_printf(("mxScale %f, myScale %f, mzScale %f\n",mxScale, myScale, mzScale));
+#endif
 #endif
 	}
 
@@ -111,43 +68,8 @@ void MPU9250::sleep(void) {
 	}
 
 
-void MPU9250::config_accel_gyro(void) {
-	// reset MPU9250, all registers to default settings
-	spi_write_register(spiImu, R_PWR_MGMT_1, PWR_RESET);	
-	delay(100); // Wait after reset
-	// as per datasheet all registers are reset to 0 except WHOAMI and PWR_MGMT_1, 
-	// so we assume reserved bits are 0
-	// select best available clock source 
-	spi_write_register(spiImu, R_PWR_MGMT_1, CLOCK_SEL_PLL);	
-	delay(200);
 
-	// fsync disabled, gyro bandwidth = 184Hz (with GYRO_CONFIG:fchoice_b = 00) 
-	spi_write_register(spiImu, R_CONFIG, 0x01);	
-
-	// output data rate = 1000Hz/(1+1) = 500Hz
-	spi_write_register(spiImu, R_SMPLRT_DIV, 0x01);	
-
-	// set gyro FS = 1000dps, fchoice_b = 00 
-    // bits[4:3] = 10 
-	spi_write_register(spiImu, R_GYRO_CONFIG, 0x10);	
-
-	// Set accelerometer FS = +/-4G 
-	// bits[4:3] = 01 
-	spi_write_register(spiImu, R_ACCEL_CONFIG, 0x08);	
-
-	// set accelerometer BW = 184Hz
-	// accel_fchoiceb = 0, a_dlpf_cfg = 1
-	spi_write_register(spiImu, R_ACCEL_CONFIG2, 0x01);	
-
-	// interrupt is active high, push-pull, 50uS pulse
-	spi_write_register(spiImu, R_INT_PIN_CFG, 0x10);	
-
-	// Enable data ready interrupt on INT pin
-	spi_write_register(spiImu, R_INT_ENABLE, 0x01);	
-	delay(100);
-	}
-
-
+#ifdef USE_9DOF_AHRS
 void MPU9250::config_accel_gyro_mag(void) {
 	uint8_t buffer[3];
 	// reset MPU9250, all registers to default settings
@@ -245,6 +167,45 @@ void MPU9250::set_srd(uint8_t srd) {
 	}
 
 
+#else
+
+void MPU9250::config_accel_gyro(void) {
+	// reset MPU9250, all registers to default settings
+	spi_write_register(spiImu, R_PWR_MGMT_1, PWR_RESET);	
+	delay(100); // Wait after reset
+	// as per datasheet all registers are reset to 0 except WHOAMI and PWR_MGMT_1, 
+	// so we assume reserved bits are 0
+	// select best available clock source 
+	spi_write_register(spiImu, R_PWR_MGMT_1, CLOCK_SEL_PLL);	
+	delay(200);
+
+	// fsync disabled, gyro bandwidth = 184Hz (with GYRO_CONFIG:fchoice_b = 00) 
+	spi_write_register(spiImu, R_CONFIG, 0x01);	
+
+	// output data rate = 1000Hz/(1+1) = 500Hz
+	spi_write_register(spiImu, R_SMPLRT_DIV, 0x01);	
+
+	// set gyro FS = 1000dps, fchoice_b = 00 
+    // bits[4:3] = 10 
+	spi_write_register(spiImu, R_GYRO_CONFIG, 0x10);	
+
+	// Set accelerometer FS = +/-4G 
+	// bits[4:3] = 01 
+	spi_write_register(spiImu, R_ACCEL_CONFIG, 0x08);	
+
+	// set accelerometer BW = 184Hz
+	// accel_fchoiceb = 0, a_dlpf_cfg = 1
+	spi_write_register(spiImu, R_ACCEL_CONFIG2, 0x01);	
+
+	// interrupt is active high, push-pull, 50uS pulse
+	spi_write_register(spiImu, R_INT_PIN_CFG, 0x10);	
+
+	// Enable data ready interrupt on INT pin
+	spi_write_register(spiImu, R_INT_ENABLE, 0x01);	
+	delay(100);
+	}
+#endif
+
 // place unit so that the sensor board accelerometer z axis is vertical. 
 // This is where the sensor z axis sees a static  acceleration of 1g / -1g. 
 // In this orientation the ax and ay values are the offsets for a 0g environment. 
@@ -341,6 +302,9 @@ int MPU9250::calibrate_gyro(CALIB_PARAMS_t &calib){
 	return (foundBadData ? 0 : 1);
 	}
 
+
+#ifdef USE_9DOF_AHRS
+
 #define MAG_NUM_CALIB_SAMPLES			4000
 	
 void MPU9250::calibrate_mag(CALIB_PARAMS_t &calib) {
@@ -389,23 +353,6 @@ void MPU9250::calibrate_mag(CALIB_PARAMS_t &calib) {
 	dbg_printf(("mxScale  = %f, myScale = %f, mzScale = %f", mxScale, myScale, mzScale));
 	}
 
-
-void MPU9250::get_vector(uint8_t startAddr, int isLittleEndian, int16_t* px, int16_t* py, int16_t* pz) {
-   uint8_t buf[6];
-   spi_read_buffer(spiImu, startAddr | SPI_READ, 6, buf);
-   if (isLittleEndian) {
-		*px = (int16_t)(((uint16_t)buf[1] << 8) | (uint16_t)buf[0]);
-		*py = (int16_t)(((uint16_t)buf[3] << 8) | (uint16_t)buf[2]);
-		*pz = (int16_t)(((uint16_t)buf[5] << 8) | (uint16_t)buf[4]);	
-		}
-   else {
-		*px = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
-		*py = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
-		*pz = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
-		}
-	}
-
-
 void MPU9250::write_AK8963_register(uint8_t subAddress, uint8_t data){
 	// set slave 0 to the AK8963 and set for write
 	spi_write_register(spiImu, R_I2C_SLV0_ADDR, AK8963_I2C_ADDR);
@@ -429,3 +376,73 @@ void MPU9250::read_AK8963_registers(uint8_t subAddress, uint8_t count, uint8_t* 
 	// read the bytes off the MPU9250 EXT_SENS_DATA registers
 	spi_read_buffer(spiImu, R_EXT_SENS_DATA_00 | SPI_READ, count, dest); 
 	}
+
+
+void MPU9250::get_accel_gyro_mag_data(float* pAccelData, float* pGyroData, float* pMagData) {
+	uint8_t buf[20];
+	int16_t x,y,z;
+	spi_read_buffer(spiImu, R_ACCEL_XOUT_H  | SPI_READ, 20, buf);
+	x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
+	y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
+	z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
+	pAccelData[0] = (float)(x - axBias) * aScale;
+	pAccelData[1] = (float)(y - ayBias) * aScale;
+	pAccelData[2] = (float)(z - azBias) * aScale;
+	
+	x = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
+	y = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
+	z = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
+	pGyroData[0] = (float)(x - gxBias) * gScale;
+	pGyroData[1] = (float)(y - gyBias) * gScale;
+	pGyroData[2] = (float)(z - gzBias) * gScale;
+
+	// mag data is little endian	
+	x = (int16_t)(((uint16_t)buf[15] << 8) | (uint16_t)buf[14]);
+	y = (int16_t)(((uint16_t)buf[17] << 8) | (uint16_t)buf[16]);
+	z = (int16_t)(((uint16_t)buf[19] << 8) | (uint16_t)buf[18]);	
+	int xi = ((int)x * (asaX+128))/256;
+	int yi = ((int)y * (asaY+128))/256;
+	int zi = ((int)z * (asaZ+128))/256;
+
+	pMagData[0] = (float)(xi - mxBias) * mxScale;
+	pMagData[1] = (float)(yi - myBias) * myScale;
+	pMagData[2] = (float)(zi - mzBias) * mzScale;	
+	}
+
+#else
+
+void MPU9250::get_accel_gyro_data(float* pAccelData, float* pGyroData) {
+	uint8_t buf[14];
+	int16_t x,y,z;
+	spi_read_buffer(spiImu, R_ACCEL_XOUT_H  | SPI_READ, 14, buf);
+	x = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
+	y = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
+	z = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
+	pAccelData[0] = (float)(x - axBias) * aScale;
+	pAccelData[1] = (float)(y - ayBias) * aScale;
+	pAccelData[2] = (float)(z - azBias) * aScale;
+	x = (int16_t)(((uint16_t)buf[8] << 8) | (uint16_t)buf[9]);
+	y = (int16_t)(((uint16_t)buf[10] << 8) | (uint16_t)buf[11]);
+	z = (int16_t)(((uint16_t)buf[12] << 8) | (uint16_t)buf[13]);	
+	pGyroData[0] = (float)(x - gxBias) * gScale;
+	pGyroData[1] = (float)(y - gyBias) * gScale;
+	pGyroData[2] = (float)(z - gzBias) * gScale;
+	}
+#endif
+
+void MPU9250::get_vector(uint8_t startAddr, int isLittleEndian, int16_t* px, int16_t* py, int16_t* pz) {
+   uint8_t buf[6];
+   spi_read_buffer(spiImu, startAddr | SPI_READ, 6, buf);
+   if (isLittleEndian) {
+		*px = (int16_t)(((uint16_t)buf[1] << 8) | (uint16_t)buf[0]);
+		*py = (int16_t)(((uint16_t)buf[3] << 8) | (uint16_t)buf[2]);
+		*pz = (int16_t)(((uint16_t)buf[5] << 8) | (uint16_t)buf[4]);	
+		}
+   else {
+		*px = (int16_t)(((uint16_t)buf[0] << 8) | (uint16_t)buf[1]);
+		*py = (int16_t)(((uint16_t)buf[2] << 8) | (uint16_t)buf[3]);
+		*pz = (int16_t)(((uint16_t)buf[4] << 8) | (uint16_t)buf[5]);	
+		}
+	}
+
+

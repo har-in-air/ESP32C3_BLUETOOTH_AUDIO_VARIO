@@ -236,12 +236,18 @@ static void vario_task(void * pvParameter) {
 		power_off();
 		}
 	dbg_println(("MPU9250 OK"));
-    
-	// configure MPU9250 to start generating gyro and accel data  
-	Imu.config_accel_gyro_mag();
 
+#ifdef USE_9DOF_AHRS    
+	// configure MPU9250 to start generating gyro, accel and mag data  
+	Imu.config_accel_gyro_mag();
 	// calibrate gyro (accel + mag if required)
 	ui_calibrate_accel_gyro_mag();
+#else
+	// configure MPU9250 to start generating gyro, accel data  
+	Imu.config_accel_gyro();
+	// calibrate gyro (accel  if required)
+	ui_calibrate_accel_gyro();
+#endif
 	delay(50);  
 	  
 	dbg_println(("\nMS5611 config"));
@@ -280,9 +286,13 @@ static void vario_task(void * pvParameter) {
 		timePreviousUs = timeNowUs;
 		drdyCounter++;
 		uint32_t marker = micros(); // set marker for estimating the time taken to read and process the data
+#ifdef USE_9DOF_AHRS
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second, mag samples are unitless
 		Imu.get_accel_gyro_mag_data(accelmG, gyroDps, mag); 
-
+#else
+		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
+		Imu.get_accel_gyro_data(accelmG, gyroDps); 
+#endif
 		// W.r.t. the CJMCU-117 board mounting on the VhARIO-ESPC3 PCB layout,
 		// we arbitrarily decide that the CJMCU-117 board silkscreen -X points "forward" or "north", 
 		// silkscreen -Y points "right" or "east", and silkscreen +Z points down. This is the North-East-Down (NED) 
@@ -296,28 +306,21 @@ static void vario_task(void * pvParameter) {
 		float accelMagnitudeSquared = accelmG[0]*accelmG[0] + accelmG[1]*accelmG[1] + accelmG[2]*accelmG[2];
 		int bUseAccel = ((accelMagnitudeSquared > 562500.0f) && (accelMagnitudeSquared < 1562500.0f)) ? 1 : 0;
 		float dtIMU = imuTimeDeltaUSecs/1000000.0f;
-#if 0		
-		float gn = DEG_TO_RAD*gyroDps[1];
-		float ge = DEG_TO_RAD*gyroDps[0];
-		float gd = -DEG_TO_RAD*gyroDps[2];
-		float an = -accelmG[1];
-		float ae = -accelmG[0];
-		float ad = accelmG[2];
-		float mn = mag[0];
-		float me = mag[1];
-		float md = mag[2];
-#else
+
 		float gn = DEG_TO_RAD*gyroDps[0];
 		float ge = -DEG_TO_RAD*gyroDps[1];
 		float gd = DEG_TO_RAD*gyroDps[2];
 		float an = accelmG[0];
 		float ae = accelmG[1];
 		float ad = -accelmG[2];
+#ifdef USE_9DOF_AHRS		
 		float mn = -mag[1];
 		float me = -mag[0];
 		float md = -mag[2];
-#endif
 		imu_mahonyAHRS_update9DOF(bUseAccel, true, dtIMU, gn, ge, gd, an, ae, ad, mn, me, md);
+#else
+		imu_mahonyAHRS_update6DOF(bUseAccel, dtIMU, gn, ge, gd, an, ae, ad);
+#endif		
 		float gCompensatedAccel = imu_gravity_compensated_accel(an, ae, ad, Q0, Q1, Q2, Q3);
 		ringbuf_add_sample(gCompensatedAccel);  
 		baroCounter++;
@@ -352,6 +355,11 @@ static void vario_task(void * pvParameter) {
 				}
 			}
 			
+		if (BtnPCCPressed) {
+			BtnPCCPressed = false;
+			IsMuted = !IsMuted;
+			if (IsMuted) audio_off();
+			}	
 		uint32_t elapsedUs =  micros() - marker; // calculate time  taken to read and process the data, must be less than 2mS
 		if (drdyCounter >= 500) {
 			drdyCounter = 0; // 1 second elapsed
@@ -367,7 +375,7 @@ static void vario_task(void * pvParameter) {
 			//dbg_printf(("kv = %d, timeout_counter = %d\n", (int)kfClimbrateCps, pwrOffTimeoutSecs));
 			//dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n",accelmG[0], accelmG[1], accelmG[2]));
 			//dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n",gyroDps[0], gyroDps[1], gyroDps[2]));
-			dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
+			//dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
 			//dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
 			#endif     
 			}

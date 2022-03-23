@@ -96,13 +96,16 @@ class MPU9250 {
   public:
     MPU9250();
 	int check_id(void);
-	void get_accel_gyro_data(float* pAccelData, float* pGyroData);
-	void get_accel_gyro_mag_data(float* pAccelData, float* pGyroData, float* pMagData);
-    void config_accel_gyro(void);
+#ifdef USE_9DOF_AHRS	
 	void config_accel_gyro_mag(void);
+    void calibrate_mag(CALIB_PARAMS_t &calib);
+	void get_accel_gyro_mag_data(float* pAccelData, float* pGyroData, float* pMagData);
+#else
+	void get_accel_gyro_data(float* pAccelData, float* pGyroData);
+    void config_accel_gyro(void);
+#endif	
     int  calibrate_gyro(CALIB_PARAMS_t &calib);
     void calibrate_accel(CALIB_PARAMS_t &calib);
-    void calibrate_mag(CALIB_PARAMS_t &calib);
 	void get_calib_params(CALIB_PARAMS_t &calib);
 	void sleep(void);
 
@@ -113,6 +116,9 @@ private :
 	int16_t gxBias;
 	int16_t gyBias;
 	int16_t gzBias;	
+	float aScale;
+	float gScale;
+#ifdef USE_9DOF_AHRS	
 	int16_t mxBias;
 	int16_t myBias;
 	int16_t mzBias;
@@ -120,11 +126,10 @@ private :
 	float mxScale;
 	float myScale;
 	float mzScale;
-	float aScale;
-	float gScale;
 	void set_srd(uint8_t srd);
 	void write_AK8963_register(uint8_t subAddress, uint8_t data);	
 	void read_AK8963_registers(uint8_t subAddress, uint8_t count, uint8_t* dest);	
+#endif	
 	void get_vector(uint8_t startAddr, int isLittleEndian, int16_t* px, int16_t* py, int16_t* pz);
 
 	};  

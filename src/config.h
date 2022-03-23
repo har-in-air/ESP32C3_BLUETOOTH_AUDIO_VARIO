@@ -82,6 +82,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // COMPILED CONFIGURATION PARAMETERS ( cannot be changed with web configuration )
 
+//#define USE_9DOF_AHRS
+
 #define PWR_CTRL_TASK_PRIORITY	1
 #define BLE_TASK_PRIORITY		2
 #define WIFI_CFG_TASK_PRIORITY	2
@@ -108,7 +110,7 @@
 // helps respond quickly to large accelerations while heavily filtering
 // in low o no acceleration situations.  Range : 0.0 (no adaptation)
 // to 1.0 (max adaptive factor)
-#define KF_ADAPTIVE_ACCEL_FACTOR			0.5f
+#define KF_ADAPTIVE_ACCEL_FACTOR			1.0f
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power

@@ -10,12 +10,14 @@ typedef struct  {
 	int16_t  gxBias;
 	int16_t  gyBias;
 	int16_t  gzBias;
+#ifdef USE_9DOF_AHRS	
 	int16_t  mxBias;
 	int16_t  myBias;
 	int16_t  mzBias;
 	float	mxScale;
 	float	myScale;
 	float	mzScale;
+#endif	
 	} CALIB_PARAMS_t;	
 
 typedef struct  {

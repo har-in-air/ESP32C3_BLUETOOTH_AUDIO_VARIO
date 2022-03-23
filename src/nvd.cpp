@@ -25,12 +25,14 @@ void nvd_calib_load(CALIB_PARAMS_t &calib) {
 		calib.gxBias = Prefs.getInt("gxb", 0);
 		calib.gyBias = Prefs.getInt("gyb", 0);
 		calib.gzBias = Prefs.getInt("gzb", 0);
+#ifdef USE_9DOF_AHRS		
 		calib.mxBias = Prefs.getInt("mxb", 0);
 		calib.myBias = Prefs.getInt("myb", 0);
 		calib.mzBias = Prefs.getInt("mzb", 0);
 		calib.mxScale = Prefs.getFloat("mxs", 1.0f);
 		calib.myScale = Prefs.getFloat("mys", 1.0f);
 		calib.mzScale = Prefs.getFloat("mzs", 1.0f);
+#endif		
 		Prefs.end();
 #ifdef NVD_DEBUG	
 		dbg_println(("Calibration Values"));
@@ -40,12 +42,14 @@ void nvd_calib_load(CALIB_PARAMS_t &calib) {
 		dbg_printf(("gxBias = %d\n", calib.gxBias));
 		dbg_printf(("gyBias = %d\n", calib.gyBias));
 		dbg_printf(("gzBias = %d\n", calib.gzBias));
+#ifdef USE_9DOF_AHRS		
 		dbg_printf(("mxBias = %d\n", calib.mxBias));
 		dbg_printf(("myBias = %d\n", calib.myBias));
 		dbg_printf(("mzBias = %d\n", calib.mzBias));
 		dbg_printf(("mxScale = %f\n", calib.mxScale));
 		dbg_printf(("myScale = %f\n", calib.myScale));
 		dbg_printf(("mzScale = %f\n", calib.mzScale));
+#endif
 #endif		
 		}
 	}
@@ -58,12 +62,14 @@ void nvd_calib_reset(CALIB_PARAMS_t &calib) {
 	calib.gxBias = 0;
 	calib.gyBias = 0;
 	calib.gzBias = 0;
+#ifdef USE_9DOF_AHRS		
 	calib.mxBias = 0;
 	calib.myBias = 0;
 	calib.mzBias = 0;
 	calib.mxScale = 1.0f;
 	calib.myScale = 1.0f;
 	calib.mzScale = 1.0f;
+#endif
 	nvd_calib_store(calib);
 	}	
 
@@ -77,12 +83,14 @@ void nvd_calib_store(CALIB_PARAMS_t &calib) {
 	Prefs.putInt("gxb", calib.gxBias);
 	Prefs.putInt("gyb", calib.gyBias);
 	Prefs.putInt("gzb", calib.gzBias);
+#ifdef USE_9DOF_AHRS		
 	Prefs.putInt("mxb", calib.mxBias);
 	Prefs.putInt("myb", calib.myBias);
 	Prefs.putInt("mzb", calib.mzBias);
 	Prefs.putFloat("mxs", calib.mxScale);
 	Prefs.putFloat("mys", calib.myScale);
 	Prefs.putFloat("mzs", calib.mzScale);
+#endif
 	Prefs.end();
 	}
 
