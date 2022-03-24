@@ -142,7 +142,7 @@
 
 // !! ensure these #defines are commented out after debugging, as the 
 // enclosed debug prints are in the critical run-time loop.
-#define IMU_DEBUG
+//#define IMU_DEBUG
 //#define PERF_DEBUG
 //#define BLE_DEBUG
 
