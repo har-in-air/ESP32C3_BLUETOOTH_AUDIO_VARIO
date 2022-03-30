@@ -1,7 +1,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#define pinPCC		9	// program/configure/calibrate button
+#define pinPCCA		9	// program/configure/calibrate/audio button
 #define pinAudio	4	// pwm beeper audio output
 #define pinAudioEn	3	// 74HC240 output enables, active low
 
@@ -14,15 +14,12 @@
 #define pinMOSI		18 	// SDA
 #define pinSCK		19	// SCL
 #define pinDRDYInt	6  	// INT
-#define pinLED		8	// power-on and bluetooth indication
+#define pinLED		8	// power-on and bluetooth active indication
 
-#define BTN_PCC()  (digitalRead(pinPCC) == HIGH ? 1 : 0)
+#define BTN_PCCA()  (digitalRead(pinPCCA) == HIGH ? 1 : 0)
 
 #define LED_ON() 	{digitalWrite(pinLED, 0); LEDState = 1;}
 #define LED_OFF() 	{digitalWrite(pinLED, 1); LEDState = 0;}
-
-#define AUDIO_ON() 		{digitalWrite(pinAudioEn, 0); AudioState = 1;}
-#define AUDIO_OFF() 	{digitalWrite(pinAudioEn, 1); AudioState = 0;}
 
 #define PWR_ON_DELAY_MS		1000
 #define PWR_OFF_DELAY_MS	2000
@@ -99,18 +96,21 @@
 // below crossoverCps
 #define VARIO_CROSSOVER_FREQHZ    	1600
 
-// This is set low as the residual acceleration bias after calibration
-// is expected to have little variation/drift
-#define KF_ACCELBIAS_VARIANCE   0.005f
+// Acceleration bias uncertainty is set low as the residual acceleration bias 
+// (post-calibration) is expected to have low variation/drift. It is further reduced
+// depending on the acceleration magnitude, as we want the
+// acceleration bias estimate to evolve only in close to zero 
+// acceleration environment.
+#define KF_ACCELBIAS_VARIANCE   0.01f
 
 // KF4 Acceleration Update variance default
-#define KF_ACCEL_UPDATE_VARIANCE   50.0f
+#define KF_ACCEL_UPDATE_VARIANCE   100.0f
 
 // injects additional uncertainty depending on magnitude of acceleration
 // helps respond quickly to large accelerations while heavily filtering
 // in low o no acceleration situations.  Range : 0.0 (no adaptation)
 // to 1.0 (max adaptive factor)
-#define KF_ADAPTIVE_ACCEL_FACTOR			1.0f
+#define KF_ADAPTIVE_ACCEL_FACTOR	0.5f
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power

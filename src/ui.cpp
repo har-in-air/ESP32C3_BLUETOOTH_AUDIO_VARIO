@@ -11,17 +11,17 @@ Ticker     Tickr;
 
 extern MPU9250 Imu;
 
-volatile uint32_t BtnPCCState;
-volatile bool BtnPCCPressed = false;
-volatile bool BtnPCCLongPress = false;
+volatile uint32_t BtnPCCAState;
+volatile bool BtnPCCAPressed = false;
+volatile bool BtnPCCALongPress = false;
 	
 void IRAM_ATTR btn_debounce() {
-	BtnPCCState = ((BtnPCCState<<1) | ((uint32_t)BTN_PCC()) );
-	if ((BtnPCCState | 0xFFFFFFF0) == 0xFFFFFFF8) {
-		BtnPCCPressed = true;
+	BtnPCCAState = ((BtnPCCAState<<1) | ((uint32_t)BTN_PCCA()) );
+	if ((BtnPCCAState | 0xFFFFFFF0) == 0xFFFFFFF8) {
+		BtnPCCAPressed = true;
 		}    
-	if (BtnPCCState == 0) {
-		BtnPCCLongPress = true;
+	if (BtnPCCAState == 0) {
+		BtnPCCALongPress = true;
 		}
 	}
 
@@ -33,8 +33,8 @@ void ui_btn_init() {
 		
 
 void ui_btn_clear() {
-	BtnPCCPressed  = false;
-	BtnPCCLongPress = false;
+	BtnPCCAPressed  = false;
+	BtnPCCALongPress = false;
 	}
 
 	
@@ -158,14 +158,14 @@ void ui_calibrate_accel_gyro_mag() {
     	}
 
 	dbg_println(("Counting down to gyro calibration"));
-	dbg_println(("Press the PCC button to enforce accelerometer & magnetometer calibration first"));
+	dbg_println(("Press the PCCA button to enforce accelerometer & magnetometer calibration first"));
 	for (int inx = 0; inx < 5; inx++) {
 		delay(500); 
 		dbg_println((5-inx));
-		if (digitalRead(pinPCC) == 0) {
+		if (digitalRead(pinPCCA) == 0) {
 			bCalibrateAccel = true;
 			bCalibrateMag = true;
-			dbg_println(("PCC button pressed"));
+			dbg_println(("PCCA button pressed"));
 			break;
 			}
 		}
@@ -198,7 +198,7 @@ void ui_calibrate_mag(CALIB_PARAMS_t &calib) {
 // use the last saved gyro calibration values.
 // The software delays a few seconds so that the unit can be left undisturbed for gyro calibration.
 // This delay is indicated with a series of 10 short beeps. While it is beeping, if you press the
-// PCC button, the unit will calibrate the accelerometer and magnetometer first and then the gyro.
+// PCCA button, the unit will calibrate the accelerometer and magnetometer first and then the gyro.
 // As soon as you hear the long confirmation tone, release the button and
 // put the unit in accelerometer calibration position resting undisturbed on a horizontal surface 
 // with the accelerometer +z axis pointing vertically downwards. You will have some time 
@@ -218,14 +218,14 @@ void ui_calibrate_accel_gyro() {
 		bCalibrateAccel = false;
 		}	
 	dbg_println(("Counting down to gyro calibration"));
-	dbg_println(("Press the PCC button to enforce accelerometer calibration first"));
+	dbg_println(("Press the PCCA button to enforce accelerometer calibration first"));
 	for (int inx = 0; inx < 10; inx++) {
 		delay(500); 
 		dbg_println((10-inx));
 		audio_generate_tone(CALIBRATING_TONE_HZ, 50); 
-		if (digitalRead(pinPCC) == 0) {
+		if (digitalRead(pinPCCA) == 0) {
 			bCalibrateAccel = true;
-			dbg_println(("PCC button pressed"));
+			dbg_println(("PCCA button pressed"));
 			break;
 			}
 		}

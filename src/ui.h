@@ -3,8 +3,8 @@
 
 #include "config.h"
 
-extern volatile bool BtnPCCPressed;
-extern volatile bool BtnPCCLongPress;
+extern volatile bool BtnPCCAPressed;
+extern volatile bool BtnPCCALongPress;
 
 void ui_indicate_uncalibrated_imu();
 void ui_indicate_power_off();

@@ -29,7 +29,6 @@ volatile SemaphoreHandle_t DrdySemaphore;
 volatile int AltitudeM;
 volatile int ClimbrateCps;
 int LEDState;
-int AudioState;
 
 static void IRAM_ATTR drdy_interrupt_handler();
 static void vario_task(void * pvParameter);
@@ -38,24 +37,27 @@ static void pwr_ctrl_task(void* pvParameter);
 static void ble_task(void* pvParameter);
 static void power_off();
 
-// pinPCC (GPIO9) has an external 10K pullup resistor to VCC
+// pinPCCAA (GPIO9) has an external 10K pullup resistor to VCC
 // pressing the button  will ground the pin.
-// This button has three different functions : program, configure, and calibrate (PCC)
+// This button has  different functions : program, configure, calibrate & audio toggle 
 // 1. (Program)
-//    Power on the unit with PCC button pressed. Or with power on, keep 
-//    PCC pressed and momentarily press the reset button.
+//    Power on the unit with PCCA button pressed. Or with power on, keep 
+//    PCCA pressed and momentarily press the reset button.
 //    This will put the ESP32-C3 into programming mode, and you can flash 
 //    the application code from the Arduino IDE.
 // 2. (WiFi Configuration)
-//    After normal power on, immediately press PCC and keep it pressed. 
+//    After normal power on, immediately press PCCA and keep it pressed. 
 //    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
 //    configuration mode. 
 // 3. (Calibrate)
 //    After normal power on, wait until you hear the battery voltage feedback beeps and
-//    then the countdown to gyroscope calibration. If you press the PGCC button
+//    then the countdown to gyroscope calibration. If you press the PCCA button
 //    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
 //    Accelerometer re-calibration is required if the acceleration calibration values in 
 //    flash were never written, or if the entire flash has been erased.
+// 4. Audio Mute/Unmute  
+//    When the vario is in normal operation, pressing PCCA will toggle the
+//    vario audio feedback.
 
 
 // handles data ready interrupt from MPU9250 (every 2ms)
@@ -69,7 +71,7 @@ static void IRAM_ATTR drdy_interrupt_handler() {
 
 
 void setup() {
-	pinMode(pinPCC, INPUT_PULLUP); //  Program/Configure/Calibrate Button
+	pinMode(pinPCCA, INPUT_PULLUP); //  Program/Configure/Calibrate Button
 	pinMode(pinPwrCtrl, OUTPUT); // soft-switch power on/off
 	digitalWrite(pinPwrCtrl, LOW);
 	pinMode(pinPwrSens, INPUT);
@@ -77,7 +79,7 @@ void setup() {
 	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // active low
 	LED_OFF();
 	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
-	AUDIO_OFF();
+	digitalWrite(pinAudioEn, HIGH);
 
 	wifi_off(); // turn off radio to save power
 
@@ -85,7 +87,7 @@ void setup() {
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
 	LED_ON();
-	AUDIO_ON();
+	digitalWrite(pinAudioEn, LOW);
 	spi_init();
 
 #ifdef TOP_DEBUG    
@@ -105,7 +107,7 @@ void setup() {
 	for (int cnt = 0; cnt < 8; cnt++) {
 		dbg_println((8-cnt));
 		delay(500);
-		if (digitalRead(pinPCC) == 0) {
+		if (digitalRead(pinPCCA) == 0) {
 			bWebConfigure = true;
 			break;
 			}
@@ -133,7 +135,7 @@ static void power_off() {
 	Serial.flush();
 	delay(10);
 	LED_OFF();
-	AUDIO_OFF();
+	digitalWrite(pinAudioEn, HIGH);
 	digitalWrite(pinPwrCtrl, LOW);
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
@@ -342,7 +344,7 @@ static void vario_task(void * pvParameter) {
 				ClimbrateCps = F_TO_I(kfClimbrateCps);
 				vaudio_tick_handler(ClimbrateCps); // audio feedback handler
 				if (ABS(ClimbrateCps) > PWR_OFF_THRESHOLD_CPS) { 
-					// reset pwrOff timeout watchdog if there is significant vertical motion
+					// reset power-off timeout watchdog if there is significant vertical motion
 					pwrOffTimeoutSecs = 0;
 					}
 				else
@@ -355,8 +357,8 @@ static void vario_task(void * pvParameter) {
 				}
 			}
 			
-		if (BtnPCCPressed) {
-			BtnPCCPressed = false;
+		if (BtnPCCAPressed) {
+			BtnPCCAPressed = false;
 			IsMuted = !IsMuted;
 			if (IsMuted) audio_off();
 			}	
