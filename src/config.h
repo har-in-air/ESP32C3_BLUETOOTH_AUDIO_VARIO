@@ -105,11 +105,11 @@
 #define KF_ACCELBIAS_VARIANCE   0.01f
 
 // KF4 Acceleration Update variance default
-#define KF_ACCEL_UPDATE_VARIANCE   100.0f
+#define KF_ACCEL_UPDATE_VARIANCE   50.0f
 
-// injects additional uncertainty depending on magnitude of acceleration
+// adaptive  addition of uncertainty depending on acceleration magnitude.
 // helps respond quickly to large accelerations while heavily filtering
-// in low o no acceleration situations.  Range : 0.0 (no adaptation)
+// in low  acceleration situations.  Range : 0.0 (no adaptation)
 // to 1.0 (max adaptive factor)
 #define KF_ADAPTIVE_ACCEL_FACTOR	0.5f
 
