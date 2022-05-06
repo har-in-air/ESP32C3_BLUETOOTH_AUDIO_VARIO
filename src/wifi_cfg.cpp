@@ -4,7 +4,7 @@
 #include <LittleFS.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-//#include <AsyncElegantOTA.h>
+#include <AsyncElegantOTA.h>
 #include <ESPmDNS.h>
 #include <esp_wifi.h>
 #include "config.h"
@@ -203,7 +203,7 @@ void wificfg_ap_server_init() {
     pServer->on("/style.css", HTTP_GET, css_handler);	
 
     // add support for OTA firmware update
-   // AsyncElegantOTA.begin(pServer);
+    AsyncElegantOTA.begin(pServer);
     pServer->begin();
 	MDNS.addService("http", "tcp", 80);
     }
