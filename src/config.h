@@ -102,16 +102,10 @@
 // depending on the acceleration magnitude, as we want the
 // acceleration bias estimate to evolve only in close to zero 
 // acceleration environment.
-#define KF_ACCELBIAS_VARIANCE   0.002f
+#define KF_ACCELBIAS_VARIANCE   0.004f
 
 // KF4 Acceleration Update variance default
 #define KF_ACCEL_UPDATE_VARIANCE   2.0f
-
-// adaptive  addition of uncertainty depending on acceleration magnitude.
-// helps respond quickly to large accelerations while heavily filtering
-// in low  acceleration situations.  Range : 0.0 (no adaptation)
-// to 1.0 (max adaptive factor)
-#define KF_ADAPTIVE_ACCEL_FACTOR	0.0f
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power

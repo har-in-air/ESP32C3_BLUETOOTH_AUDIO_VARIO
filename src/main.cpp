@@ -100,6 +100,8 @@ void setup() {
 	nvd_config_load(Config);
 	nvd_calib_load(Calib);
 	adc_init();
+	int adcSample = adc_sample_average();
+	dbg_printf(("adc avg sample = %d\n", adcSample));
 
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
@@ -134,19 +136,24 @@ void setup() {
 static void power_off() {
 	Serial.flush();
 	delay(10);
-	LED_OFF();
 	digitalWrite(pinAudioEn, HIGH);
 	digitalWrite(pinPwrCtrl, LOW);
+	LED_OFF();
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
 
 
 static void ble_task(void* pvParameter){
 	ble_uart_init();
+	int counter = 0;
 	dbg_println(("\nBluetooth LE LK8EX1 messages @ 10Hz\n"));
 	while (1) {
-		LEDState = !LEDState;
-		digitalWrite(pinLED, LEDState);
+		counter++;
+		if (counter > 9) {
+			counter = 0;
+			LEDState = !LEDState;
+			digitalWrite(pinLED, LEDState);
+			}
 		float batVoltage = adc_battery_voltage();
 		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, batVoltage);				
 		vTaskDelay(100/portTICK_PERIOD_MS);
@@ -174,8 +181,6 @@ static void pwr_ctrl_task(void* pvParameter){
 						counter++;
 						if (counter >= timeoutCounter) {
 							dbg_println(("Switching off power!"));
-							Serial.flush();
-							delay(100);
 							power_off();
 							}
 						}
@@ -260,7 +265,7 @@ static void vario_task(void * pvParameter) {
 
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, false, Baro.altitudeCmAvg, 0.0f, 0.0f);
+	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, Baro.altitudeCmAvg, 0.0f, 0.0f);
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
@@ -350,7 +355,6 @@ static void vario_task(void * pvParameter) {
 				else
 				if (pwrOffTimeoutSecs >= (Config.misc.pwrOffTimeoutMinutes*60)) {
 					dbg_println(("Timed out with no significant climb/sink, power down"));
-					Serial.flush();
 					ui_indicate_power_off();
 					power_off(); 
 					}   

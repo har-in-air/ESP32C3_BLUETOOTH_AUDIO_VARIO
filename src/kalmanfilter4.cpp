@@ -66,12 +66,11 @@ static bool UseAdaptiveVariance = false;
 // aVariance should be specified with a large enough value to allow the true state (z, v) to be within the uncertainty estimate.
 // It should be set higher for more thermic/turbulent conditions
 
-void kalmanFilter4_configure(float zSensorVariance, float aVariance, bool bAdaptUpdateVariance, float zInitial, float vInitial, float aInitial){
+void kalmanFilter4_configure(float zSensorVariance, float aVariance,  float zInitial, float vInitial, float aInitial){
 	ZSensorVariance = zSensorVariance;
 	AUpdateVariance = KF_ACCEL_UPDATE_VARIANCE*1000.0f;
 	AccelVariance = aVariance;
     BiasVariance = KF_ACCELBIAS_VARIANCE;
-	UseAdaptiveVariance = bAdaptUpdateVariance;
 
 	State.z = zInitial;
 	State.v = vInitial;
@@ -188,18 +187,10 @@ void kalmanFilter4_update(float zm, float am, float* pz, float* pv) {
 
 	// add R_k
 	s00 = s00 + ZSensorVariance;
-	if (UseAdaptiveVariance) {	
-		float accel_ext = (am-State.b)*(am-State.b);
-		// inject additional uncertainty depending on the magnitude of the external acceleration.
-		// allows filter  to respond quickly to moderate/large accelerations while heavily filtering out noise
-		// when there is low or no acceleration
-		s11 = s11 + KF_ADAPTIVE_ACCEL_FACTOR*accel_ext;
-		// allow system to update estimated bias only when there is low acceleration
-		BiasVariance = 1.0f/(1.0f + 2.0f*accel_ext);	
-		}
-	else {
-		s11 = s11 + AUpdateVariance;
-		}
+	s11 = s11 + AUpdateVariance;
+	float accel_ext = abs(am-State.b)/100.0f;
+	// allow system to update acceleration bias estimate only when there is low acceleration
+	BiasVariance = KF_ACCELBIAS_VARIANCE/(1.0f + accel_ext);	
 
 	// Compute S_k_inv
 	float sdetinv = 1.0f/(s00*s11 - s10*s01);

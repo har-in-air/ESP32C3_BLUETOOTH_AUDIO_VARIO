@@ -22,10 +22,10 @@ int adc_sample_average() {
 
 
 // two-point calibration for slope & intercept using ATTEN_DB_0, 10bit resolution
-#define V1		3.278f
-#define ADC1	750.0f
-#define V2		4.020f
-#define ADC2	924.0f
+#define V1		3.252f
+#define ADC1	723.0f
+#define V2		4.080f
+#define ADC2	908.0f
 
 float adc_battery_voltage(int sample) {
 	float slope = (V2 - V1)/(ADC2 - ADC1);
