@@ -102,7 +102,7 @@
 // depending on the acceleration magnitude, as we want the
 // acceleration bias estimate to evolve only in close to zero 
 // acceleration environment.
-#define KF_ACCELBIAS_VARIANCE   0.004f
+#define KF_ACCELBIAS_VARIANCE   0.005f
 
 // KF4 Acceleration Update variance default
 #define KF_ACCEL_UPDATE_VARIANCE   2.0f

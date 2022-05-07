@@ -186,9 +186,9 @@ void kalmanFilter4_update(float zm, float am, float* pz, float* pv) {
 	float s11 = Paa;
 
 	// add R_k
-	s00 = s00 + ZSensorVariance;
-	s11 = s11 + AUpdateVariance;
-	float accel_ext = abs(am-State.b)/100.0f;
+	s00 += ZSensorVariance;
+	s11 += AUpdateVariance;
+	float accel_ext = abs(am-State.b)/10.0f;
 	// allow system to update acceleration bias estimate only when there is low acceleration
 	BiasVariance = KF_ACCELBIAS_VARIANCE/(1.0f + accel_ext);	
 
