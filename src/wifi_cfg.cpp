@@ -21,7 +21,7 @@ const char* szAPPassword = ""; // no password for stand-alone access point
 
 AsyncWebServer* pServer = NULL;
 
-static float BatteryVoltage;
+
 
 static void wifi_start_as_ap();
 static void wifi_start_as_station();
@@ -48,7 +48,7 @@ static String server_string_processor(const String& var){
         }
     else
     if(var == "BATTERY_VOLTAGE"){
-        return String(BatteryVoltage, 1);
+        return String(BatteryVoltage, 2);
         }
 	else
 	if(var == "SSID"){
@@ -213,8 +213,6 @@ static void css_handler(AsyncWebServerRequest *request){
 	}
 
 static void index_page_handler(AsyncWebServerRequest *request){
-	int adcVal = adc_sample_average();
-	BatteryVoltage = adc_battery_voltage(adcVal);
 	request->send(LittleFS, "/index.html", String(), false, server_string_processor);
 	}
 

@@ -50,12 +50,11 @@ void ui_indicate_uncalibrated_imu() {
 	}
 
 	
-// "no-activity" timeout power-off indicated with a series of descending tones. 
+// power-off indicated with a series of descending tones. 
 void ui_indicate_power_off() {
-	audio_generate_tone(2000,1000); 
-	audio_generate_tone(1000,1000);
-	audio_generate_tone(500, 1000);
-	audio_generate_tone(250, 1000);
+	audio_generate_tone(1000,500);
+	audio_generate_tone(500, 500);
+	audio_generate_tone(250, 500);
 	}
 
 // error reading MS5611 calibration coefficients from PROM (CRC error) 
@@ -74,28 +73,17 @@ void ui_indicate_fault_MPU9250() {
 		}
 	}
 
-void ui_indicate_battery_voltage() {
+void ui_indicate_battery_voltage(float batV) {
 	int numBeeps;
-	int adcVal;
-#if 0	// for two point calibration
-	while (1) {
-		adcVal = adc_sample_average();
-		dbg_printf(("adc val = %d\r\n", adcVal ));
-		delay(500);
-		}
-#else
-	adcVal = adc_sample_average();
-#endif	
-	float fbv = adc_battery_voltage(adcVal);
-	dbg_printf(("\r\nBattery voltage = %.2fV\r\n", fbv ));
+	dbg_printf(("\r\nBattery voltage = %.2fV\r\n", batV ));
 
-	if (fbv >= 4.0f) numBeeps = 5;
+	if (batV >= 4.0f) numBeeps = 5;
 	else
-	if (fbv >= 3.9f) numBeeps = 4;
+	if (batV >= 3.9f) numBeeps = 4;
 	else
-	if (fbv >= 3.7f) numBeeps = 3;
+	if (batV >= 3.7f) numBeeps = 3;
 	else
-	if (fbv >= 3.6f) numBeeps = 2;
+	if (batV >= 3.6f) numBeeps = 2;
 	else numBeeps = 1;
 	while (numBeeps--) {
 		audio_generate_tone(BATTERY_TONE_HZ, 300);

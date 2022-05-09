@@ -100,8 +100,8 @@ void setup() {
 	nvd_config_load(Config);
 	nvd_calib_load(Calib);
 	adc_init();
-	int adcSample = adc_sample_average();
-	dbg_printf(("adc avg sample = %d\n", adcSample));
+	int adcVal = adc_sample_average();
+	BatteryVoltage = adc_battery_voltage(adcVal);
 
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
@@ -126,6 +126,8 @@ void setup() {
 		}
   	else {
 		dbg_println(("Vario mode"));
+		dbg_println(("\nAudio indication of battery voltage"));
+		ui_indicate_battery_voltage(BatteryVoltage);
     	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
 		}
 	// delete the loopTask which called setup() from arduino app_main()
@@ -139,6 +141,7 @@ static void power_off() {
 	digitalWrite(pinAudioEn, HIGH);
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
+	audio_generate_tone(200,1000); // when you hear the low frequency tone, you can release the power button.
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
 
@@ -154,8 +157,8 @@ static void ble_task(void* pvParameter){
 			LEDState = !LEDState;
 			digitalWrite(pinLED, LEDState);
 			}
-		float batVoltage = adc_battery_voltage();
-		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, batVoltage);				
+		BatteryVoltage = adc_battery_voltage();
+		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, BatteryVoltage);				
 		vTaskDelay(100/portTICK_PERIOD_MS);
 		}
 	}
@@ -223,8 +226,6 @@ static void vario_task(void * pvParameter) {
 
 	int pwrOffCounter, baroCounter, drdyCounter;
 	int pwrOffTimeoutSecs;
-	dbg_println(("\nAudio indication of battery voltage"));
-	ui_indicate_battery_voltage();
 
 	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {

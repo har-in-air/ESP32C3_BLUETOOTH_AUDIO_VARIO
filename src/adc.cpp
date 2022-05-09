@@ -3,6 +3,7 @@
 #include "config.h"
 #include "adc.h"
 
+float BatteryVoltage;
 
 void adc_init() {
     adc1_config_width(ADC_WIDTH_BIT_12); // no 10-bit resolution option !?

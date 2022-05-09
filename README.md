@@ -7,7 +7,7 @@
 * WiFi Over-the-air (OTA) firmware updates. 
 * Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument Android apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
-* Soft power on/off button.
+* Soft-switch power on/off.
 * No-activity power-down to save battery life.
 * USB-C Li-poly battery charging at up to 500mA.
 * PCB sized for standard Hammond enclosure.
@@ -16,7 +16,7 @@ accurate barometric pressure altitude and climb-rate data.
 * Ubuntu 20.04 LTS AMDx64
 * [Visual Studio Code with PlatformIO plugin using Arduino framework](https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/) 
 * The file `platformio.ini` specifies the framework packages, toolchain and libraries used by the project. 
-* LittleFS partition for hosting HTML web server pages
+* LittleFS partition for hosting HTML web page content.
 
 # Hardware
 
@@ -39,23 +39,16 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 # Software Build Notes
 
 ## Build Steps
-* The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. 
+* The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. This will wipe the entire flash including any previous partition tables. 
 * Next, select `Platform -> Build Filesystem Image`. This will build a LittleFS flash partition with the contents of the `/data` directory. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
-* Next, select `General -> Clean All`, then `Build`. You may see (if the issue has not been fixed) this build error : 
-```
-Compiling .pio/build/esp32c3/libfe7/ESP Async WebServer/WebServer.cpp.o
-.pio/libdeps/esp32c3/ESP Async WebServer/src/AsyncWebSocket.cpp: In member function "IPAddress AsyncWebSocketClient::remoteIP()":
-.pio/libdeps/esp32c3/ESP Async WebServer/src/AsyncWebSocket.cpp:832:28: error: call of overloaded "IPAddress(unsigned int)" is ambiguous
-         return IPAddress(0U);
-```
-Fix the error by replacing 0U with (uint32_t)0. 
-* From now on, only select `General -> Clean` to avoid pulling in the original library source code again.
+* Next, select `General -> Clean All`, then `Build`. This is only required once, to download the source code for the required libraries and build them. 
+* If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
 * Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
+* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the PWR button pins. Connect a slide switch across the button pins. When you want to flash or erase the ESP32-C3, press and hold the PCCA button while turning the slide switch on. When done flashing, turn off the slide switch. Without this aid, you would have to keep the PWR button pressed for the full duration of the flash/erase process.
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
 [This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
-* [This is a startup serial monitor log of the vario with calibrated accelerometer.](docs/normal_boot_log.txt). 
 
 
 # WiFi Configuration
@@ -83,14 +76,15 @@ So you can still configure the vario in the field.
 # Usage
 
 ## Power on and off
-To power on, press the PWR button and hold until you see the power LED turn on. Release.
+To power on, press the PWR button and hold (1 second) until you see the power LED turn on. Release.
 
-If Bluetooth transmission is enabled, the power LED will start blinking once transmission starts, else it will stay on.
+If Bluetooth transmission is enabled, the power LED will start blinking once every 2 seconds when  transmission starts, else it will stay on.
 
-To power off, press the PWR button and hold until you see the LED turn off. Release.
+To power off, press the PWR button and hold (2 seconds) until you hear a confirmation audio tone. If the power LED was on, it will turn off as well. Release.
 
 ## Audio mute toggle
-A brief press of the PCC button while the vario is operational will toggle the audio on and off.
+A brief press of the PCCA button while the vario is operational will toggle the audio on and off.
+
 This is convenient if you have set the zeros threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are on launch.
 
 
