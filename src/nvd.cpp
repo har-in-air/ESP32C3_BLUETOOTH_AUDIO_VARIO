@@ -111,7 +111,7 @@ void nvd_config_load(CONFIG_PARAMS_t &config) {
 		config.vario.crossoverCps = Prefs.getInt("xover", VARIO_CROSSOVER_CPS_DEFAULT);
 
 		config.kf.accelVariance = Prefs.getInt("avar", KF_ACCEL_VARIANCE_DEFAULT);
-		config.kf.zMeasVariance = Prefs.getInt("zvar", KF_ZMEAS_VARIANCE_DEFAULT);
+		config.kf.kAdapt = Prefs.getInt("kadapt", KF_ADAPT_DEFAULT);
 
 		config.misc.bleEnable = Prefs.getBool("ble", BLE_DEFAULT);
 		config.misc.pwrOffTimeoutMinutes = Prefs.getInt("timeout", PWR_OFF_TIMEOUT_MINUTES_DEFAULT);
@@ -123,7 +123,7 @@ void nvd_config_load(CONFIG_PARAMS_t &config) {
 		CLAMP(config.vario.crossoverCps, VARIO_CROSSOVER_CPS_MIN, VARIO_CROSSOVER_CPS_MAX);
 
 		CLAMP(config.kf.accelVariance, KF_ACCEL_VARIANCE_MIN, KF_ACCEL_VARIANCE_MAX);
-		CLAMP(config.kf.zMeasVariance, KF_ZMEAS_VARIANCE_MIN, KF_ZMEAS_VARIANCE_MAX);
+		CLAMP(config.kf.kAdapt, KF_ADAPT_MIN, KF_ADAPT_MAX);
 
 		CLAMP(config.misc.pwrOffTimeoutMinutes, PWR_OFF_TIMEOUT_MINUTES_MIN, PWR_OFF_TIMEOUT_MINUTES_MAX);
 
@@ -139,7 +139,7 @@ void nvd_config_load(CONFIG_PARAMS_t &config) {
 		
 		dbg_println(("KALMAN FILTER"));
 		dbg_printf(("accelVariance = %d\n", config.kf.accelVariance));
-		dbg_printf(("zMeasVariance = %d\n", config.kf.zMeasVariance));
+		dbg_printf(("kAdapt = %d\n", config.kf.kAdapt));
 			
 		dbg_println(("MISCELLANEOUS"));
 		dbg_printf(("pwrOffTimeoutMinutes = %d\n", config.misc.pwrOffTimeoutMinutes));
@@ -159,7 +159,7 @@ void nvd_config_reset(CONFIG_PARAMS_t &config) {
 	config.vario.crossoverCps = VARIO_CROSSOVER_CPS_DEFAULT;
 
 	config.kf.accelVariance = KF_ACCEL_VARIANCE_DEFAULT;
-	config.kf.zMeasVariance = KF_ZMEAS_VARIANCE_DEFAULT;
+	config.kf.kAdapt = KF_ADAPT_DEFAULT;
 
 	config.misc.bleEnable = BLE_DEFAULT;
 	config.misc.pwrOffTimeoutMinutes = PWR_OFF_TIMEOUT_MINUTES_DEFAULT;
@@ -179,7 +179,7 @@ void nvd_config_store(CONFIG_PARAMS_t &config) {
 	Prefs.putInt("xover", config.vario.crossoverCps);
 
 	Prefs.putInt("avar", config.kf.accelVariance);
-	Prefs.putInt("zvar", config.kf.zMeasVariance);
+	Prefs.putInt("kadapt", config.kf.kAdapt);
 
 	Prefs.putBool("ble", config.misc.bleEnable);
 	Prefs.putInt("timeout", config.misc.pwrOffTimeoutMinutes);

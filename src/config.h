@@ -56,9 +56,10 @@
 #define KF_ACCEL_VARIANCE_MIN         50
 #define KF_ACCEL_VARIANCE_MAX         150
 
-#define KF_ZMEAS_VARIANCE_DEFAULT    200
-#define KF_ZMEAS_VARIANCE_MIN        100
-#define KF_ZMEAS_VARIANCE_MAX        400
+// adaptive uncertainty injection
+#define KF_ADAPT_DEFAULT     100
+#define KF_ADAPT_MIN         50
+#define KF_ADAPT_MAX         150
 
 // Power-off timeout. The vario will power down
 // if it does not detect climb or sink rates more than
@@ -102,19 +103,28 @@
 // depending on the acceleration magnitude, as we want the
 // acceleration bias estimate to evolve only in close to zero 
 // acceleration environment.
-#define KF_ACCELBIAS_VARIANCE   0.005f
+#define KF_ACCELBIAS_VARIANCE   	0.005f
 
-// KF4 Acceleration Update variance default
-#define KF_ACCEL_UPDATE_VARIANCE   2.0f
+// KF4 Acceleration Measurement Noise variance
+#define KF_A_MEAS_VARIANCE   		2.0f
+
+// KF4 Altitude Measurement Noise Variance
+#define KF_Z_MEAS_VARIANCE			200.0f
+
+// injects additional uncertainty depending on magnitude of acceleration
+// helps respond quickly to large accelerations while heavily filtering
+// in low or no acceleration situations.  Range : 0.0 (no adaptation)
+// to 1.0 (max adaptive factor)
+#define KF_ADAPTIVE_ACCEL_FACTOR	1.0f
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power
-#define PWR_OFF_THRESHOLD_CPS    50
+#define PWR_OFF_THRESHOLD_CPS    	50
 
 // if you find that gyro calibration fails even when you leave
 // the unit undisturbed, increase this offset limit
 // until you find that gyro calibration works consistently.
-#define GYRO_OFFSET_LIMIT_1000DPS   	50
+#define GYRO_OFFSET_LIMIT_1000DPS   50
 
 // print debug information to the serial port for different code modules
 

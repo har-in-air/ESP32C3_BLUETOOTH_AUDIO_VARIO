@@ -21,8 +21,6 @@ const char* szAPPassword = ""; // no password for stand-alone access point
 
 AsyncWebServer* pServer = NULL;
 
-
-
 static void wifi_start_as_ap();
 static void wifi_start_as_station();
 
@@ -71,28 +69,28 @@ static String server_string_processor(const String& var){
         return String(Config.misc.pwrOffTimeoutMinutes);
         }    
     else
-    if(var == "AVAR_MIN"){
+    if(var == "KF_AVAR_MIN"){
         return String(KF_ACCEL_VARIANCE_MIN);
         }
     else
-    if(var == "AVAR_MAX"){
+    if(var == "KF_AVAR_MAX"){
         return String(KF_ACCEL_VARIANCE_MAX);
         }
     else
-    if(var == "AVAR"){
+    if(var == "KF_AVAR"){
         return String(Config.kf.accelVariance);
         }
     else
-    if(var == "ZVAR_MIN"){
-        return String(KF_ZMEAS_VARIANCE_MIN);
+    if(var == "KF_ADAPT_MIN"){
+        return String(KF_ADAPT_MIN);
         }
     else
-    if(var == "ZVAR_MAX"){
-        return String(KF_ZMEAS_VARIANCE_MAX);
+    if(var == "KF_ADAPT_MAX"){
+        return String(KF_ADAPT_MAX);
         }
     else
-    if(var == "ZVAR"){
-        return String(Config.kf.zMeasVariance);
+    if(var == "KF_ADAPT"){
+        return String(Config.kf.kAdapt);
         }
 	else
     if(var == "CLIMB_MIN"){
@@ -266,10 +264,10 @@ static void get_handler(AsyncWebServerRequest *request) {
 		bChange = true; 
 		Config.kf.accelVariance = inputMessage.toInt();
 		}
-	if (request->hasParam("zvar")) {
-		inputMessage = request->getParam("zvar")->value();
+	if (request->hasParam("kadapt")) {
+		inputMessage = request->getParam("kadapt")->value();
 		bChange = true; 
-		Config.kf.zMeasVariance = inputMessage.toInt();
+		Config.kf.kAdapt = inputMessage.toInt();
 		}
 	if (request->hasParam("timeout")) {
 		inputMessage = request->getParam("timeout")->value();

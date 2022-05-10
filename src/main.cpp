@@ -18,7 +18,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "0.95";
+const char* FwRevision = "0.96";
 
 MPU9250	Imu;
 MS5611	Baro;
@@ -106,7 +106,7 @@ void setup() {
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
 	dbg_println(("until you hear a low-frequency tone. Then release the button"));
-	for (int cnt = 0; cnt < 8; cnt++) {
+	for (int cnt = 0; cnt < 6; cnt++) {
 		dbg_println((8-cnt));
 		delay(500);
 		if (digitalRead(pinPCCA) == 0) {
@@ -265,8 +265,8 @@ static void vario_task(void * pvParameter) {
 	Baro.init_sample_state_machine(); // start the pressure & temperature sampling cycle
 
 	dbg_println(("\nKalmanFilter config"));
-	// initialize kalman filter with Ms5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure((float)Config.kf.zMeasVariance, 1000.0f*(float)Config.kf.accelVariance, Baro.altitudeCmAvg, 0.0f, 0.0f);
+	// initialize kalman filter with MS5611 estimated altitude, estimated initial climbrate = 0.0
+	kalmanFilter4_configure(1000.0f*(float)Config.kf.accelVariance, ((float)Config.kf.kAdapt)/100.0f, Baro.altitudeCmAvg, 0.0f, 0.0f);
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
