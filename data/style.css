@@ -69,11 +69,11 @@ p {
 .slidecontainer {
 width: 100%;
 }
-
+	
 .slider {
 -webkit-appearance: none;
-width: 100%;
-height: 15px;
+width: 95%;
+height: 5px;
 border-radius: 2px;
 background: white;
 outline: none;
@@ -89,7 +89,7 @@ opacity: 1;
 .slider::-webkit-slider-thumb {
 -webkit-appearance: none;
 appearance: none;
-width: 15px;
+width: 10px;
 height: 15px;
 border-radius: 10%;
 background: #558ED5;

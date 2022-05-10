@@ -49,7 +49,7 @@
 // to the average thermal core climbrate you expect for the site and conditions.
 #define VARIO_CROSSOVER_CPS_DEFAULT     400
 #define VARIO_CROSSOVER_CPS_MIN         300
-#define VARIO_CROSSOVER_CPS_MAX         800
+#define VARIO_CROSSOVER_CPS_MAX         600
 
 // Kalman filter configuration
 #define KF_ACCEL_VARIANCE_DEFAULT     100
@@ -100,9 +100,8 @@
 
 // Acceleration bias uncertainty is set low as the residual acceleration bias 
 // (post-calibration) is expected to have low variation/drift. It is further reduced
-// depending on the acceleration magnitude, as we want the
-// acceleration bias estimate to evolve only in close to zero 
-// acceleration environment.
+// depending on the acceleration magnitude, as we want the acceleration bias estimate 
+// to evolve ideally in a zero acceleration environment.
 #define KF_ACCELBIAS_VARIANCE   	0.005f
 
 // KF4 Acceleration Measurement Noise variance
@@ -110,12 +109,6 @@
 
 // KF4 Altitude Measurement Noise Variance
 #define KF_Z_MEAS_VARIANCE			200.0f
-
-// injects additional uncertainty depending on magnitude of acceleration
-// helps respond quickly to large accelerations while heavily filtering
-// in low or no acceleration situations.  Range : 0.0 (no adaptation)
-// to 1.0 (max adaptive factor)
-#define KF_ADAPTIVE_ACCEL_FACTOR	1.0f
 
 // If climbrate or sinkrate stays below this threshold for the configured
 // time interval, vario goes to sleep to conserve power
