@@ -74,6 +74,7 @@ width: 100%;
 -webkit-appearance: none;
 width: 100%;
 height: 15px;
+border-radius: 2px;
 background: white;
 outline: none;
 opacity: 1;
@@ -90,6 +91,7 @@ opacity: 1;
 appearance: none;
 width: 15px;
 height: 15px;
+border-radius: 10%;
 background: #558ED5;
 cursor: pointer;
 }
