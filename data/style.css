@@ -66,3 +66,31 @@ p {
 	font-size:1.0em;
 	}
 
+.slidecontainer {
+width: 100%;
+}
+
+.slider {
+-webkit-appearance: none;
+width: 100%;
+height: 15px;
+background: white;
+outline: none;
+opacity: 1;
+-webkit-transition: .2s;
+transition: opacity .2s;
+}
+
+.slider:hover {
+opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 15px;
+height: 15px;
+background: #558ED5;
+cursor: pointer;
+}
+
