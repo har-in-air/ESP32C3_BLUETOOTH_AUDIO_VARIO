@@ -64,9 +64,9 @@
 // Power-off timeout. The vario will power down
 // if it does not detect climb or sink rates more than
 // PWR_OFF_THRESHOLD_CPS, for the specified minutes.
-#define PWR_OFF_TIMEOUT_MINUTES_DEFAULT   5
+#define PWR_OFF_TIMEOUT_MINUTES_DEFAULT   10
 #define PWR_OFF_TIMEOUT_MINUTES_MIN       5
-#define PWR_OFF_TIMEOUT_MINUTES_MAX       15
+#define PWR_OFF_TIMEOUT_MINUTES_MAX       20
 
 // audio feedback tones
 #define BATTERY_TONE_HZ			400
