@@ -8,7 +8,7 @@
 #include "imu.h"
 #include "mpu9250.h"
 #include "ms5611.h"
-#include "kalmanfilter4.h"
+#include "kalmanfilter4d.h"
 #include "audio.h"
 #include "vaudio.h"
 #include "adc.h"
@@ -37,19 +37,18 @@ static void pwr_ctrl_task(void* pvParameter);
 static void ble_task(void* pvParameter);
 static void power_off();
 
-// pinPCCAA (GPIO9) has an external 10K pullup resistor to VCC
-// pressing the button  will ground the pin.
+// PCCA button (GPIO9) has an external 10K pullup resistor to VCC
 // This button has  different functions : program, configure, calibrate & audio toggle 
-// 1. (Program)
+// 1. Program
 //    Power on the unit with PCCA button pressed. Or with power on, keep 
 //    PCCA pressed and momentarily press the reset button.
 //    This will put the ESP32-C3 into programming mode, and you can flash 
-//    the application code from the Arduino IDE.
-// 2. (WiFi Configuration)
+//    the application code.
+// 2. WiFi Configuration
 //    After normal power on, immediately press PCCA and keep it pressed. 
 //    Wait until you hear a low tone, then release. The unit will now be in WiFi configuration
 //    configuration mode. 
-// 3. (Calibrate)
+// 3. Calibrate Accelerometer
 //    After normal power on, wait until you hear the battery voltage feedback beeps and
 //    then the countdown to gyroscope calibration. If you press the PCCA button
 //    during the gyro calibration countdown, the unit will start accelerometer calibration first. 
@@ -138,10 +137,10 @@ void setup() {
 static void power_off() {
 	Serial.flush();
 	delay(10);
-	digitalWrite(pinAudioEn, HIGH);
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
-	audio_generate_tone(200,1000); // when you hear the low frequency tone, you can release the power button.
+	audio_generate_tone(200,500); // when you hear the low frequency tone, you can release the power button.
+	audio_off();
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
 
@@ -266,7 +265,7 @@ static void vario_task(void * pvParameter) {
 
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with MS5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4_configure(1000.0f*(float)Config.kf.accelVariance, ((float)Config.kf.kAdapt)/100.0f, Baro.altitudeCmAvg, 0.0f, 0.0f);
+	kalmanFilter4d_configure(1000.0f*(float)Config.kf.accelVariance, KF_ADAPT, Baro.altitudeCmAvg, 0.0f, 0.0f);
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
@@ -342,8 +341,8 @@ static void vario_task(void * pvParameter) {
 				// is used in the kf algorithm update phase
 				float zAccelAverage = ringbuf_average_newest_samples(10); 
 				float dtKF = kfTimeDeltaUSecs/1000000.0f;
-				kalmanFilter4_predict(dtKF);
-				kalmanFilter4_update(Baro.altitudeCm, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
+				kalmanFilter4d_predict(dtKF);
+				kalmanFilter4d_update(Baro.altitudeCm, zAccelAverage, (float*)&kfAltitudeCm, (float*)&kfClimbrateCps);
 				// reset time elapsed between kalman filter algorithm updates
 				kfTimeDeltaUSecs = 0.0f;
 				AltitudeM = F_TO_I(kfAltitudeCm/100.0f);

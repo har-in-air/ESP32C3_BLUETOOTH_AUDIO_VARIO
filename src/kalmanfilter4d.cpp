@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include <math.h>
 #include "config.h"
-#include "kalmanfilter4.h"
+#include "kalmanfilter4d.h"
 
-static const char* TAG = "kalmanfilter4";
+static const char* TAG = "kalmanfilter4d";
 
 typedef struct KF4_STATE_ {
 	float z; // altitude
@@ -69,7 +69,7 @@ static float KAdapt;
 // zInitial can be determined by averaging a few samples of the altitude measurement.
 // vInitial and aInitial can be set to zero.
 
-void kalmanFilter4_configure(float aVariance,  float kAdapt, float zInitial, float vInitial, float aInitial){
+void kalmanFilter4d_configure(float aVariance,  float kAdapt, float zInitial, float vInitial, float aInitial){
 	ZMeasVariance = KF_Z_MEAS_VARIANCE;
 	AMeasVariance = KF_A_MEAS_VARIANCE;
     ABiasVariance = KF_ACCELBIAS_VARIANCE;
@@ -109,7 +109,7 @@ void kalmanFilter4_configure(float aVariance,  float kAdapt, float zInitial, flo
 //  | 0   0   1       0      |
 //  | 0   0   0       1      |
 //
-void kalmanFilter4_predict(float dt) {
+void kalmanFilter4d_predict(float dt) {
 	// Predicted (a priori) state vector estimate x_k- = F * x_k-1+
 	float accel_true = State.a - State.b; // true acceleration = acceleration minus acceleration sensor bias
 	State.z = State.z + (State.v * dt) + (accel_true * dt * dt* 0.5f);
@@ -177,7 +177,7 @@ void kalmanFilter4_predict(float dt) {
 // | zsensor_variance  0                |  
 // | 0                 asensor_variance |
 
-void kalmanFilter4_update(float zm, float am, float* pz, float* pv) {
+void kalmanFilter4d_update(float zm, float am, float* pz, float* pv) {
 	// Innovation Error y_k = measurement minus apriori estimate
 	float z_err = zm - State.z;
 	float a_err = am - State.a;

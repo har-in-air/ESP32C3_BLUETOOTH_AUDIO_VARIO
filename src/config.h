@@ -56,10 +56,6 @@
 #define KF_ACCEL_VARIANCE_MIN         50
 #define KF_ACCEL_VARIANCE_MAX         150
 
-// adaptive uncertainty injection
-#define KF_ADAPT_DEFAULT     100
-#define KF_ADAPT_MIN         50
-#define KF_ADAPT_MAX         150
 
 // Power-off timeout. The vario will power down
 // if it does not detect climb or sink rates more than
@@ -98,6 +94,8 @@
 // below crossoverCps
 #define VARIO_CROSSOVER_FREQHZ    	1600
 
+#define KF_ADAPT         1.0f
+
 // Acceleration bias uncertainty is set low as the residual acceleration bias 
 // (post-calibration) is expected to have low variation/drift. It is further reduced
 // depending on the acceleration magnitude, as we want the acceleration bias estimate 
@@ -105,7 +103,7 @@
 #define KF_ACCELBIAS_VARIANCE   	0.005f
 
 // KF4 Acceleration Measurement Noise variance
-#define KF_A_MEAS_VARIANCE   		2.0f
+#define KF_A_MEAS_VARIANCE   		10.0f
 
 // KF4 Altitude Measurement Noise Variance
 #define KF_Z_MEAS_VARIANCE			200.0f

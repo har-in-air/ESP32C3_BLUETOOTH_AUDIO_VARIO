@@ -83,15 +83,6 @@
 		</td>
 		<td><span id="avar_val"></span></td>
 		</tr>
-		<tr>
-		<td>Adaptive Uncertainty</td>
-		<td>
-		<div class="slidecontainer">
-		<input type="range" min="%KF_ADAPT_MIN%" max="%KF_ADAPT_MAX%" value="%KF_ADAPT%" step="5" name="kadapt" class="slider" id="kadapt">
-		</div>
-		</td>
-		<td><span id="kadapt_val"></span></td>
-		</tr>
 	</table>
 </fieldset>
 <br>
@@ -154,13 +145,6 @@ var av = document.getElementById("avar_val");
 av.innerHTML = slider_avar.value;
 slider_avar.oninput = function() {
 	av.innerHTML = this.value;
-	}
-
-var slider_kadapt = document.getElementById("kadapt");
-var kad = document.getElementById("kadapt_val");
-kad.innerHTML = slider_kadapt.value;
-slider_kadapt.oninput = function() {
-	kad.innerHTML = this.value;
 	}
 
 var slider_timeout = document.getElementById("timeout");
