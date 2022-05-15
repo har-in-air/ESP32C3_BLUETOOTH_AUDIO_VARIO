@@ -13,7 +13,7 @@
 <p><span>Battery Voltage : </span><span id="batteryVoltage">%BATTERY_VOLTAGE%v</span></p>
 </div>
 <div style="text-align:center;">
-<a href="/defaults"><button style="width:200px;">Set Defaults</button></a>
+<a href="/defaults"><button style="width:130px;">Set Defaults</button></a>
 </div>
 <br>
 <br>
@@ -75,15 +75,24 @@
 <fieldset><legend>Kalman Filter</legend>
 	<table>
 		<tr>
-		<td style="width:180px;">Acceleration Variance</td>
-		<td style="width:350px;">
-		<div class="slidecontainer">
-		<input type="range" min="%KF_AVAR_MIN%" max="%KF_AVAR_MAX%" value="%KF_AVAR%" step="5" name="avar" class="slider" id="avar">
-		</div>  
-		</td>
-		<td><span id="avar_val"></span></td>
+			<td style="width:180px;">Acceleration Variance</td>
+			<td style="width:350px;">
+			<div class="slidecontainer">
+			<input type="range" min="%KF_AVAR_MIN%" max="%KF_AVAR_MAX%" value="%KF_AVAR%" step="5" name="avar" class="slider" id="avar">
+			</div>  
+			</td>
+			<td><span id="avar_val"></span></td>
 		</tr>
-	</table>
+		<tr>
+			<td style="width:180px;">Adapt Factor</td>
+			<td style="width:350px;">
+			<div class="slidecontainer">
+			<input type="range" min="%KF_ADAPT_MIN%" max="%KF_ADAPT_MAX%" value="%KF_ADAPT%" step="5" name="adapt" class="slider" id="adapt">
+			</div>  
+			</td>
+			<td><span id="adapt_val"></span></td>
+			</tr>
+		</table>
 </fieldset>
 <br>
 
@@ -147,6 +156,13 @@ slider_avar.oninput = function() {
 	av.innerHTML = this.value;
 	}
 
+var slider_adapt = document.getElementById("adapt");
+var adapt = document.getElementById("adapt_val");
+adapt.innerHTML = slider_adapt.value;
+slider_adapt.oninput = function() {
+	adapt.innerHTML = this.value;
+	}
+	
 var slider_timeout = document.getElementById("timeout");
 var timeout = document.getElementById("timeout_val");
 timeout.innerHTML = slider_timeout.value;

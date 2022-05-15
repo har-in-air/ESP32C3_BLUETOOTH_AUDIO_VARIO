@@ -56,6 +56,9 @@
 #define KF_ACCEL_VARIANCE_MIN         50
 #define KF_ACCEL_VARIANCE_MAX         150
 
+#define KF_ADAPT_DEFAULT	100
+#define KF_ADAPT_MIN		50
+#define KF_ADAPT_MAX		150
 
 // Power-off timeout. The vario will power down
 // if it does not detect climb or sink rates more than

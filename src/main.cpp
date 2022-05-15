@@ -265,7 +265,7 @@ static void vario_task(void * pvParameter) {
 
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with MS5611 estimated altitude, estimated initial climbrate = 0.0
-	kalmanFilter4d_configure(1000.0f*(float)Config.kf.accelVariance, KF_ADAPT, Baro.altitudeCmAvg, 0.0f, 0.0f);
+	kalmanFilter4d_configure(1000.0f*(float)Config.kf.accelVariance, ((float)Config.kf.adapt)/100.0f, Baro.altitudeCmAvg, 0.0f, 0.0f);
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );

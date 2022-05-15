@@ -29,6 +29,7 @@ typedef struct  {
 
 typedef struct  {
 	int16_t  accelVariance; // environmental acceleration disturbance variance, divided by 1000
+	int16_t  adapt; 
 	} KALMAN_FILTER_PARAMS_t;
 
 typedef struct  {
