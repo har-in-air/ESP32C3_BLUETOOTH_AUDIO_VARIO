@@ -139,7 +139,7 @@ static void power_off() {
 	delay(10);
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
-	audio_generate_tone(200,500); // when you hear the low frequency tone, you can release the power button.
+	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
 	audio_off();
 	esp_deep_sleep_start(); // required as button is still pressed
 	}
