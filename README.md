@@ -60,31 +60,49 @@ Connect to the WiFi Access Point `Vario-AP`, no password needed.
 Open the url `http://192.168.4.1` in a browser.
 You can use `http://vario.local` with any OS that has mDNS support. MacOS has built-in support. For Ubuntu, install Avahi. For Windows, install Bonjour.
 
-You can now configure an external WiFi Access Point SSID and password. 
-Then you do not have to switch between your home WiFi network and the vario Access Point to be able to configure the vario. 
-After configuration, restart the vario and trigger wifi configuration mode again.
-
-Now if the external Access Point is available, the vario will connect to it as a client, and then start the configuration web server. 
-If your OS has mDNS support, use the url `http://vario.local` for configuration. 
-Else you will have to watch the serial monitor to find the dynamically assigned IP address.
-
-If the configured external AP is not available (or configured with wrong credentials) the vario will fall back to the stand-alone Access Point and web server. 
-So you can still configure the vario in the field.
-
 <img src="docs/wifi_config_webpage.png">
+
+## Configuration Options
+
+### WiFi Credentials
+Enter your home WiFi Access Point SSID and password so that the vario can connect to the access point as a station. Then you can just enter the webpage url `http://vario.local` to access the vario configuration web page.
+
+If the external Access Point is not configured or the configured access point is not available, e.g. on the launch site, the vario will configure itself as a standalone Wifi Access Point with SSID `Vario-AP`, no password. You can use your phone or tablet to connect first to this access point. Then access the webpage url `http://vario.local` as before.
+
+### Audio Tone configuration
+The climb tone threshold should be configured for what you consider the minimum climbrate that you can turn in without losing height.
+
+The zero tone is used to indicate air that is rising, but not strong enough to try aggressive turns. Since your glider has a sink rate of ~ -1m/s in still air, anything more than this indicates rising air. 
+
+The sink tone is used to indicate sinking air, not a sinking glider. So the maximum you can set it to is -1m/s ( "hands-up" glider sink rate in still air).
+
+The crossover climbrate is used to adjust the frequency discrimination. The vario allocates 3 octaves of audio frequency to climbrates below this threshold, and 1 octave
+above the threshold. So if you fly in conditions with strong thermals (e.g. +5m/s average), you can set the threshold to 500.
+
+### Kalman Filter configuration
+Set the variance parameter lower for sites/conditions with soft,smooth-edged thermals. Set the parameter higher for conditions with narrow, hard-edged thermals.
+
+### Timeout
+The vario will power off automatically to save battery life if it does not detect climb/sink rates beyond a minimum threshold within a specified interval (specified in minutes). If you often stand on the launch site for several minutes, hooked-up to the glider and waiting for launch conditions to improve, use a larger timeout.
+
+### Bluetooth LK8EX1
+If you enable this option, the vario will transmit [$LK8EX1 sentences](https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt) using the Bluetooth LE protocol at 10Hz. The Bluetooth device name is `BLE-Vario`.
 
 # Usage
 
-## Power on and off
-To power on, press the PWR button and hold (1 second) until you see the power LED turn on. Release.
+## Power On 
+To power on, press the PWR button and hold (~1 second) until you see the power LED turn on. Release.
 
-If Bluetooth transmission is enabled, the power LED will start blinking once every 2 seconds when  transmission starts, else it will stay on.
+If Bluetooth transmission is disabled, the power LED will stay on.
 
-To power off, press the PWR button and hold (2 seconds) until you hear a confirmation audio tone. If the power LED was on, it will turn off as well. Release.
+If Bluetooth transmission is enabled, the power LED will start blinking once every 2 seconds after transmission starts.
+
+## Power Off
+To power off, press the PWR button and hold (~2 seconds) until you hear a confirmation audio tone. If the power LED was on, it will turn off as well. Release.
 
 ## Audio mute toggle
-A brief press of the PCCA button while the vario is operational will toggle the audio on and off.
+After the vario has finished booting and calibrating the gyro, a brief press of the PCCA button  will toggle the audio on and off.
 
-This is convenient if you have set the zeros threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are on launch.
+This is convenient if you have set the zero-tone threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are hooked in to the glider and waiting to launch.
 
 
