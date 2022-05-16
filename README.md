@@ -70,6 +70,9 @@ Enter your home WiFi Access Point SSID and password so that the vario can connec
 If the external Access Point is not configured or the configured access point is not available, e.g. on the launch site, the vario will configure itself as a standalone Wifi Access Point with SSID `Vario-AP`, no password. You can use your phone or tablet to connect first to this access point. Then access the webpage url `http://vario.local` as before.
 
 ### Audio Tone configuration
+
+<img src="docs/climbsink_audio_response_graph.png">
+
 The climb tone threshold should be configured for what you consider the minimum climbrate that you can turn in without losing height.
 
 The zero tone is used to indicate air that is rising, but not strong enough to try aggressive turns. Since your glider has a sink rate of ~ -1m/s in still air, anything more than this indicates rising air. 
