@@ -5,10 +5,10 @@
  Other features :
 * WiFi Vario configuration via web page.
 * WiFi Over-the-air (OTA) firmware updates. 
-* Bluetooth LE transmission of $LK8EX1 sentences. You can use flight instrument Android apps like [XCTrack](https://xctrack.org/) with 
+* Bluetooth LE transmission of [$LK8EX1 sentences](https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt), to provide apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
-* Soft-switch power on/off.
-* No-activity power-down to save battery life.
+* Soft-switched power on/off.
+* No-activity power-down to conserve battery life.
 * USB-C Li-poly battery charging at up to 500mA.
 * PCB sized for standard Hammond enclosure.
 
@@ -20,15 +20,15 @@ accurate barometric pressure altitude and climb-rate data.
 
 # Hardware
 
+* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
 * AI-Thinker ESP-C3-12F C3FN4 module (4MByte flash, Wi-Fi and Bluetooth LE)
 * CJMCU-117 module with MPU9250 9-DOF IMU and MS5611 barometric pressure sensor
+* TLV75533 LDO regulator, max current 500mA
 * KPEG006 broadband-audio piezo transducer
 * 74HC240 used as a push-pull piezo driver for louder volume 
 * MCP73871 Li-poly battery charger, max 500mA charging current
 * 1800mAHr Lipoly battery
 * Hammond 1551K standard size enclosure (80 x 40 x 20mm). 
-* TLV75533 LDO regulator, max current 500mA
-* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
 
 ## Current Drain
 
@@ -73,23 +73,26 @@ If the external Access Point is not configured or the configured access point is
 
 <img src="docs/climbsink_audio_response_graph.png">
 
-The climb tone threshold should be configured for what you consider the minimum climbrate that you can turn in without losing height.
+The climb tone threshold should be configured for what you consider the minimum climbrate that you can turn in without losing height. The range is +20cm/s to +100cm/s.
 
-The zero tone is used to indicate air that is rising, but not strong enough to try aggressive turns. Since your glider has a sink rate of ~ -1m/s in still air, anything more than this indicates rising air. 
+Since a paraglider has a 'hands-up' sink rate of approximately -1m/s in still air, anything more than this indicates rising air. 
+The zero tone is used to indicate air that is rising, but not strong enough for aggressive turns. The range is -20cm/s to +20cm/s. 
 
-The sink tone is used to indicate sinking air, not a sinking glider. So the maximum you can set it to is -1m/s ( "hands-up" glider sink rate in still air).
+The sink tone is used to indicate sinking air, not a sinking glider. The range is -400cm/s to -100cm/s.
 
-The crossover climbrate is used to adjust the frequency discrimination. The vario allocates 3 octaves of audio frequency to climbrates below this threshold, and 1 octave
-above the threshold. So if you fly in conditions with strong thermals (e.g. +5m/s average), you can set the threshold to 500.
+Note that these thresholds are purely personal choices, depending on how 'talkative' you want the vario to be.
+
+The crossover climbrate is used to adjust the frequency discrimination. The vario allocates 3 octaves of audio bandwidth to climbrates below this threshold, and 1 octave
+above the threshold. So if the expected average thermal strength is +5m/s, set the threshold to 500.
 
 ### Kalman Filter configuration
-Set the variance parameter lower for sites/conditions with soft,smooth-edged thermals. Set the parameter higher for conditions with narrow, hard-edged thermals.
+Set the variance parameter lower for sites/conditions with soft, wide & smooth-edged thermals. Set the parameter higher for conditions with strong, narrow & hard-edged thermals.
 
 ### Timeout
 The vario will power off automatically to save battery life if it does not detect climb/sink rates beyond a minimum threshold within a specified interval (specified in minutes). If you often stand on the launch site for several minutes, hooked-up to the glider and waiting for launch conditions to improve, use a larger timeout.
 
 ### Bluetooth LK8EX1
-If you enable this option, the vario will transmit [$LK8EX1 sentences](https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt) using the Bluetooth LE protocol at 10Hz. The Bluetooth device name is `BLE-Vario`.
+If you enable this option, the vario will transmit $LK8EX1 sentences using the Bluetooth LE protocol at 10Hz. The Bluetooth device name is `BLE-Vario`.
 
 # Usage
 
@@ -103,8 +106,8 @@ If Bluetooth transmission is enabled, the power LED will start blinking once eve
 ## Power Off
 To power off, press the PWR button and hold (~2 seconds) until you hear a confirmation audio tone. If the power LED was on, it will turn off as well. Release.
 
-## Audio mute toggle
-After the vario has finished booting and calibrating the gyro, a brief press of the PCCA button  will toggle the audio on and off.
+## Audio mute 
+When the audio has finished initialization and is providing vario audio feedback, a brief press of the PCCA button  will toggle the audio on / off.
 
 This is convenient if you have set the zero-tone threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are hooked in to the glider and waiting to launch.
 
