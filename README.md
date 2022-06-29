@@ -40,6 +40,7 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 # Software Build Notes
 
 ## Build Steps
+* Select `Rev A` or `Rev B` hardware option in the platformio.ini file.
 * The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. This will wipe the entire flash including any previous partition tables. 
 * Next, select `Platform -> Build Filesystem Image`. This will build a LittleFS flash partition with the contents of the `/data` directory. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
