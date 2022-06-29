@@ -18,7 +18,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "0.98";
+const char* FwRevision = "0.99";
 
 MPU9250	Imu;
 MS5611	Baro;
@@ -70,17 +70,28 @@ static void IRAM_ATTR drdy_interrupt_handler() {
 
 
 void setup() {
-	pinMode(pinPCCA, INPUT_PULLUP); //  Program/Configure/Calibrate Button
+	pinMode(pinPCCA, INPUT_PULLUP); //  Program/Configure/Calibrate/Audio Mute Button
 	pinMode(pinPwrCtrl, OUTPUT); // soft-switch power on/off
 	digitalWrite(pinPwrCtrl, LOW);
-	pinMode(pinPwrSens, INPUT);
+	pinMode(pinPwrSens, INPUT); // to detect  power-off button press
 
-	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // active low
+	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // power/bluetooth LED, active low
 	LED_OFF();
 	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
 	digitalWrite(pinAudioEn, HIGH);
 
 	wifi_off(); // turn off radio to save power
+
+#ifdef TOP_DEBUG   
+#ifdef HW_REV_B 
+	// Serial print redirected to USB CDC port (on Ubuntu, shows up as /dev/ttyACMx)
+	Serial.begin();
+#endif	
+#ifdef HW_REV_A 
+	// Serial print to uart port. Requires external USB-uart adapter (on Ubuntu, shows up as /dev/ttyUSBx)
+	Serial.begin(115200);
+#endif
+#endif
 
 	// PWR button needs to be pressed for one second to switch on
 	delay(1000);
@@ -89,8 +100,8 @@ void setup() {
 	digitalWrite(pinAudioEn, LOW);
 	spi_init();
 
-#ifdef TOP_DEBUG    
-	Serial.begin(115200);
+#ifdef HW_REV_B 
+	delay(1000);
 #endif
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
 	dbg_printf(("Firmware Revision %s\n", FwRevision));

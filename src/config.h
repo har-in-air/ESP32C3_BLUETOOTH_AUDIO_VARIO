@@ -1,6 +1,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+
+#ifdef HW_REV_A
 #define pinPCCA		9	// program/configure/calibrate/audio button
 #define pinAudio	4	// pwm beeper audio output
 #define pinAudioEn	3	// 74HC240 output enables, active low
@@ -15,6 +17,25 @@
 #define pinSCK		19	// SCL
 #define pinDRDYInt	6  	// INT
 #define pinLED		8	// power-on and bluetooth active indication
+#endif
+
+#ifdef HW_REV_B
+#define pinPCCA		9	// program/configure/calibrate/audio button
+#define pinAudio	7	// pwm beeper audio output
+#define pinAudioEn	6	// 74HC240 output enables, active low
+
+#define pinPwrSens	21	// detect power on/off button press
+#define pinPwrCtrl	10	// power on/off
+
+#define pinCSB		20	// CSB (ms5611)
+#define pinMISO		1	// SDO ms5611 & AD0 mpu9250
+#define pinNCS		3 	// NCS (mpu9250)
+#define pinMOSI		4 	// SDA
+#define pinSCK		5	// SCL
+#define pinDRDYInt	2  	// INT
+#define pinLED		8	// power-on and bluetooth active indication
+#endif
+
 
 #define BTN_PCCA()  (digitalRead(pinPCCA) == HIGH ? 1 : 0)
 
@@ -118,7 +139,7 @@
 // if you find that gyro calibration fails even when you leave
 // the unit undisturbed, increase this offset limit
 // until you find that gyro calibration works consistently.
-#define GYRO_OFFSET_LIMIT_1000DPS   50
+#define GYRO_OFFSET_LIMIT_1000DPS   200
 
 // print debug information to the serial port for different code modules
 
