@@ -9,7 +9,8 @@
 accurate barometric pressure altitude and climb-rate data.
 * Soft-switched power on/off.
 * No-activity power-down to conserve battery life.
-* USB-C Li-poly battery charging at up to 500mA.
+* On Rev B hardware, the USB C interface supports both Li-Poly batter charging at up to 0.5A, and program flash/debug.
+On the Rev A hardware, the USB C interface only supports Li-poly battery charging.
 * PCB sized for standard Hammond enclosure.
 
 # Software Build Environment 
@@ -44,9 +45,24 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
 * Next, select `General -> Clean All`, then `Build`. This is only required once, to download the source code for the required libraries and build them. 
 * If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
+
+`Rev A hardware`
+* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the PWR button pins. Connect a slide switch across the button pins. 
+Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the PCCA button while turning the slide switch on. When done flashing, turn off the slide switch. Without this aid, you would have to keep the PWR button pressed for the full duration of the flash/erase process.
+
 * Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
-* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the PWR button pins. Connect a slide switch across the button pins. When you want to flash or erase the ESP32-C3, press and hold the PCCA button while turning the slide switch on. When done flashing, turn off the slide switch. Without this aid, you would have to keep the PWR button pressed for the full duration of the flash/erase process.
-* Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. Since there is no calibration data, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
+
+* Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
+
+`Rev B hardware`
+* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the onboard jumper/spdt switch SW2. You will see the serial/jtag CDC port show up as a new serial port (on Ubuntu /dev/ttyACMx instead of /dev/ttyUSBx). If you have not already done this, set the port in platformio.ini and rebuild.
+
+* Select `Build` and then `Upload` to build and flash the application firmware binary.
+
+* To see the serial debug prints and prompts on boot, open the jumper/spdt switch to turn off the vario. Select `Monitor` in VSC and then short the jumper/spdt switch.  
+
+* For both Rev A and Rev B hardware : since there is no calibration data on first power up after a full flash erase and upload, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
+
 [This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
 
