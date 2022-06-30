@@ -8,10 +8,8 @@
 * Bluetooth LE transmission of [$LK8EX1 sentences](https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt), to provide apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
 * Soft-switched power on/off.
-* No-activity power-down to conserve battery life.
-* On Rev B hardware, the USB C interface supports both Li-Poly batter charging at up to 0.5A, and program flash/debug.
-On the Rev A hardware, the USB C interface only supports Li-poly battery charging.
-* PCB sized for standard Hammond enclosure.
+* 'No activity' time-out power down  to conserve battery life.
+* [2-layer PCB sized for standard Hammond 1551K enclosure](https://github.com/har-in-air/VhARIO-ESPC3).
 
 # Software Build Environment 
 * Ubuntu 20.04 LTS AMDx64
@@ -21,7 +19,6 @@ On the Rev A hardware, the USB C interface only supports Li-poly battery chargin
 
 # Hardware
 
-* [Kicad schematic and PCB layout](https://github.com/har-in-air/VhARIO-ESPC3)
 * AI-Thinker ESP-C3-12F C3FN4 module (4MByte flash, Wi-Fi and Bluetooth LE)
 * CJMCU-117 module with MPU9250 9-DOF IMU and MS5611 barometric pressure sensor
 * TLV75533 LDO regulator, max current 500mA
@@ -30,6 +27,8 @@ On the Rev A hardware, the USB C interface only supports Li-poly battery chargin
 * MCP73871 Li-poly battery charger, max 500mA charging current
 * 1800mAHr Lipoly battery
 * Hammond 1551K standard size enclosure (80 x 40 x 20mm). 
+* On Rev B hardware, the USB C interface supports Li-Poly battery charging and program flash/debug.
+On the Rev A hardware, the USB C interface only supports battery charging. An external USB-UART adapter is required for flash/debug operation.
 
 ## Current Drain
 
@@ -40,7 +39,7 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 # Software Build Notes
 
 ## Build Steps
-* Select `Rev A` or `Rev B` hardware option in the platformio.ini file.
+* Select `Rev A` or `Rev B` hardware configuration options in the platformio.ini file.
 * The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. This will wipe the entire flash including any previous partition tables. 
 * Next, select `Platform -> Build Filesystem Image`. This will build a LittleFS flash partition with the contents of the `/data` directory. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
@@ -48,19 +47,19 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 * If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
 
 `Rev A hardware`
-* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the PWR button pins. Connect a slide switch across the button pins. 
-Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the PCCA button while turning the slide switch on. When done flashing, turn off the slide switch. Without this aid, you would have to keep the PWR button pressed for the full duration of the flash/erase process.
+* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Connect a slide switch or jumper across the PWR button pins. 
+Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the `PCCA` button while turning the slide switch/jumper on. When done flashing, turn off the slide switch/jumper. Without this switch/jumper, you would have to keep the `PWR` button pressed for the full duration of the erase & flash process.
 
 * Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
 
 `Rev B hardware`
-* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the onboard jumper/spdt switch SW2. You will see the serial/jtag CDC port show up as a new serial port (on Ubuntu /dev/ttyACMx instead of /dev/ttyUSBx). If you have not already done this, set the port in platformio.ini and rebuild.
+* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the on-board flash & debug jumper/spdt switch (JP1 or SW2). You will see the CDC port show up as a new serial port. On Ubuntu it will be /dev/ttyACMx instead of /dev/ttyUSBx. If you have not already done this, select this new port as the upload and monitor port in platformio.ini.
 
 * Select `Build` and then `Upload` to build and flash the application firmware binary.
 
-* To see the serial debug prints and prompts on boot, open the jumper/spdt switch to turn off the vario. Select `Monitor` in VSC and then short the jumper/spdt switch.  
+* To see  serial debug prints and prompts on boot, open the flash & debug jumper/spdt switch (JP1/SW2)to turn off the vario. Select `Monitor` in VSC and then switch on the vario using the `PWR` button or short the flash & debug jumper/spdt switch (JP1/SW2).  
 
 * For both Rev A and Rev B hardware : since there is no calibration data on first power up after a full flash erase and upload, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
 
@@ -70,7 +69,7 @@ Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, 
 
 # WiFi Configuration
 
-To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCC` button. When you hear a confirmation tone, release PCC. 
+To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCCA` button. When you hear a confirmation tone, release the button. 
 
 Connect to the WiFi Access Point `Vario-AP`, no password needed. 
 
@@ -105,8 +104,8 @@ above the threshold. So if the expected average thermal strength is +5m/s, set t
 ### Kalman Filter configuration
 Set the variance parameter lower for sites/conditions with soft, wide & smooth-edged thermals. Set the parameter higher for conditions with strong, narrow & hard-edged thermals.
 
-### Timeout
-The vario will power off automatically to save battery life if it does not detect climb/sink rates beyond a minimum threshold within a specified interval (specified in minutes). If you often stand on the launch site for several minutes, hooked-up to the glider and waiting for launch conditions to improve, use a larger timeout.
+### Inactivity Time-out
+The vario will power off automatically to save battery life if it does not detect climb/sink rates beyond a minimum threshold within a specified interval (specified in minutes). If you often stand on the launch site for several minutes, hooked-up to the glider and waiting for launch conditions to improve, use a larger time-out.
 
 ### Bluetooth LK8EX1
 If you enable this option, the vario will transmit $LK8EX1 sentences using the Bluetooth LE protocol at 10Hz. The Bluetooth device name is `BLE-Vario`.
@@ -114,17 +113,17 @@ If you enable this option, the vario will transmit $LK8EX1 sentences using the B
 # Usage
 
 ## Power On 
-To power on, press the PWR button and hold (~1 second) until you see the power LED turn on. Release.
+To power on, press the `PWR` button and hold (~1 second) until you see the power/bluetooth LED turn on. Release.
 
-If Bluetooth transmission is disabled, the power LED will stay on.
+If Bluetooth transmission is disabled, the power/bluetooth LED will stay on.
 
-If Bluetooth transmission is enabled, the power LED will start blinking once every 2 seconds after transmission starts.
+If Bluetooth transmission is enabled, the power/bluetooth LED will start blinking once every 2 seconds after transmission starts.
 
 ## Power Off
-To power off, press the PWR button and hold (~2 seconds) until you hear a confirmation audio tone. If the power LED was on, it will turn off as well. Release.
+To power off, press the `PWR` button and hold (~2 seconds) until you hear a confirmation audio tone. If the power/bluetooth LED was on, it will turn off as well. Release.
 
-## Audio mute 
-When the audio has finished initialization and is providing vario audio feedback, a brief press of the PCCA button  will toggle the audio on / off.
+## Audio Mute 
+When the vario has finished initialization and is providing vario audio feedback, a brief press of the `PCCA` button  will toggle the audio on / off.
 
 This is convenient if you have set the zero-tone threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are hooked in to the glider and waiting to launch.
 
