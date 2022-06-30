@@ -47,7 +47,7 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 * If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
 
 `Rev A hardware`
-* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Connect a slide switch or jumper across the PWR button pins. 
+* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Connect a slide switch or jumper across the `PWR` button pins. 
 Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the `PCCA` button while turning the slide switch/jumper on. When done flashing, turn off the slide switch/jumper. Without this switch/jumper, you would have to keep the `PWR` button pressed for the full duration of the erase & flash process.
 
 * Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
@@ -55,7 +55,7 @@ Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
 
 `Rev B hardware`
-* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the on-board flash & debug jumper/spdt switch (JP1 or SW2). You will see the CDC port show up as a new serial port. On Ubuntu it will be /dev/ttyACMx instead of /dev/ttyUSBx. If you have not already done this, select this new port as the upload and monitor port in platformio.ini.
+* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the on-board flash & debug jumper/spdt switch (JP1 or SW2). You will see the CDC port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. If you have not already done this, select this new port as the upload and monitor port in platformio.ini.
 
 * Select `Build` and then `Upload` to build and flash the application firmware binary.
 
