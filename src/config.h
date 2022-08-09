@@ -1,7 +1,6 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-
 #ifdef HW_REV_A
 #define pinPCCA		9	// program/configure/calibrate/audio button
 #define pinAudio	4	// pwm beeper audio output
@@ -42,8 +41,8 @@
 #define LED_ON() 	{digitalWrite(pinLED, 0); LEDState = 1;}
 #define LED_OFF() 	{digitalWrite(pinLED, 1); LEDState = 0;}
 
-#define PWR_ON_DELAY_MS		1000
-#define PWR_OFF_DELAY_MS	2000
+#define PWR_ON_DELAY_MS		1000UL
+#define PWR_OFF_DELAY_MS	2000UL
 
 ////////////////////////////////////////////////////////////////////
 // WEB CONFIGURATION PARAMETER DEFAULTS AND LIMITS

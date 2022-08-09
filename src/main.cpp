@@ -177,7 +177,7 @@ static void ble_task(void* pvParameter){
 static void pwr_ctrl_task(void* pvParameter){
 	int state = 0;
 	int counter = 0;
-	int timeoutCounter = PWR_OFF_DELAY_MS/(10*portTICK_PERIOD_MS);
+	int timeoutCounter = (int)(PWR_OFF_DELAY_MS/(10UL*portTICK_PERIOD_MS));
 
 	while (1) {
 		switch (state) {
@@ -203,7 +203,7 @@ static void pwr_ctrl_task(void* pvParameter){
 						}
 			break;
 				}
-		vTaskDelay(10);
+		vTaskDelay(10 / portTICK_PERIOD_MS);
 		}
 	}
 
