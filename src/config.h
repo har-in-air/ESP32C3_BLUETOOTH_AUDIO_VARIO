@@ -1,6 +1,7 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+
 #ifdef HW_REV_A
 #define pinPCCA		9	// program/configure/calibrate/audio button
 #define pinAudio	4	// pwm beeper audio output
@@ -146,9 +147,11 @@
 #ifdef TOP_DEBUG
 	#define dbg_println(x) {Serial.println x;}
 	#define dbg_printf(x)  {Serial.printf x;}
+	#define dbg_flush()  Serial.flush()
 #else
 	#define dbg_println(x)
 	#define dbg_printf(x)
+	#define dbg_flush()
 #endif
 // these #defines can be left uncommented after debugging, as the enclosed
 // debug prints do not appear in the critical run-time loop

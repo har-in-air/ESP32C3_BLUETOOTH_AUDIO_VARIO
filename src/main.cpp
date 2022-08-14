@@ -146,8 +146,6 @@ void setup() {
 
 
 static void power_off() {
-	Serial.flush();
-	delay(10);
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
 	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
@@ -240,7 +238,7 @@ static void vario_task(void * pvParameter) {
 	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
-		Serial.flush();
+		dbg_flush();
 		ui_indicate_fault_MS5611(); 
 		power_off();
 		}
@@ -249,7 +247,7 @@ static void vario_task(void * pvParameter) {
 	dbg_println(("\nCheck communication with MPU9250"));
 	if (!Imu.check_id()) {
 		dbg_println(("Error reading Mpu9250 WHO_AM_I register"));
-		Serial.flush();
+		dbg_flush();
 		ui_indicate_fault_MPU9250();
 		power_off();
 		}

@@ -153,26 +153,26 @@ static String server_string_processor(const String& var){
 
 
 static void wifi_start_as_ap() {
-	Serial.printf("Starting Access Point %s with password %s\n", szAPSSID, szAPPassword);
+	dbg_printf(("Starting Access Point %s with password %s\n", szAPSSID, szAPPassword));
 	WiFi.softAP(szAPSSID, szAPPassword);
 	IPAddress IP = WiFi.softAPIP();
-	Serial.print("AP IP address : ");
-	Serial.println(IP);
+	dbg_printf(("AP IP address : "));
+    dbg_println((IP));
 	}
 
 
 static void wifi_start_as_station() {
-	Serial.printf("Connecting as station to SSID %s\n", Config.cred.ssid);
+	dbg_printf(("Connecting as station to SSID %s\n", Config.cred.ssid));
     WiFi.mode(WIFI_STA);
     WiFi.begin(Config.cred.ssid.c_str(), Config.cred.password.c_str());
     if (WiFi.waitForConnectResult(10000UL) != WL_CONNECTED) {
-    	Serial.printf("Connection failed!\n");
+    	dbg_printf(("Connection failed!\n"));
     	wifi_start_as_ap();
     	}
 	else {
-    	Serial.println();
-    	Serial.print("Local IP Address: ");
-    	Serial.println(WiFi.localIP());
+    	dbg_println(());
+    	dbg_printf(("Local IP Address: "));
+    	dbg_println((WiFi.localIP()));
 		}
 	}
 
@@ -186,7 +186,7 @@ void wificfg_ap_server_init() {
 		wifi_start_as_station();
 		}	
 	if (!MDNS.begin("vario")) { // Use http://vario.local for web server page
-		Serial.println("Error starting mDNS service");
+		dbg_println(("Error starting mDNS service"));
 	    }
     pServer = new AsyncWebServer(80);
     if (pServer == NULL) {
