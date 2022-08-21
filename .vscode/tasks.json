@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "PlatformIO",
+			"task": "Clean All (esp32c3)",
+			"problemMatcher": [
+				"$platformio"
+			],
+			"group": "clean",
+			"label": "PlatformIO: Clean a build environment and installed library dependencies (esp32c3)"
+		}
+	]
+}

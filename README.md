@@ -55,16 +55,16 @@ Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
 
 `Rev B hardware`
-* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Short the on-board flash & debug jumper/spdt switch (JP1 or SW2). You will see the CDC port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. If you have not already done this, select this new port as the upload and monitor port in platformio.ini.
+* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Press and hold the PCCA button. Now close the flash/debug jumper or slide switch (JP1 or SW2). Release the PCCA button. You will see the CDC port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. Set this new port as the upload and monitor port in platformio.ini.
 
 * Select `Build` and then `Upload` to build and flash the application firmware binary.
 
-* To see  serial debug prints and prompts on boot, open the flash & debug jumper/spdt switch (JP1/SW2)to turn off the vario. Select `Monitor` in VSC and then switch on the vario using the `PWR` button or short the flash & debug jumper/spdt switch (JP1/SW2).  
+* To see  serial debug prints and prompts on boot, open the flash/debug jumper / slide switch (JP1/SW2) to turn off the vario. Select `Monitor` in VSC and then switch on the vario using the `PWR` button.  
 
-* For both Rev A and Rev B hardware : since there is no calibration data on first power up after a full flash erase and upload, you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope.
+* For both Rev A and Rev B hardware : After a full chip erase and firmware upload, there is no calibration data. So you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope. Once complete, the calibration parameters will be saved to flash.
 
 [This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
-* The gyroscope is re-calibrated each time on power-up. You should leave the vario undisturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
+* The gyroscope is re-calibrated each time on power-up. You should leave the vario un-disturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
 
 
 # WiFi Configuration
