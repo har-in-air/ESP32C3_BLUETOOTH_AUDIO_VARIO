@@ -100,9 +100,6 @@ void setup() {
 	digitalWrite(pinAudioEn, LOW);
 	spi_init();
 
-#ifdef HW_REV_B 
-	delay(1000);
-#endif
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
 	dbg_printf(("Firmware Revision %s\n", FwRevision));
 
@@ -124,6 +121,20 @@ void setup() {
 			break;
 			}
 		}
+
+ setCpuFrequencyMhz(80);
+  uint32_t Freq = getCpuFrequencyMhz();
+  Serial.print("CPU Freq = ");
+  Serial.print(Freq);
+  Serial.println(" MHz");
+  Freq = getXtalFrequencyMhz();
+  Serial.print("XTAL Freq = ");
+  Serial.print(Freq);
+  Serial.println(" MHz");
+  Freq = getApbFrequency();
+  Serial.print("APB Freq = ");
+  Serial.print(Freq);
+  Serial.println(" Hz");		
    	
 	xTaskCreate( pwr_ctrl_task, "pwr_ctrl_task", 1024, NULL, PWR_CTRL_TASK_PRIORITY, NULL );
 	if (bWebConfigure == true) {
