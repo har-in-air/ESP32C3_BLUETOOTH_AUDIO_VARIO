@@ -24,7 +24,11 @@ static uint8_t ble_uart_nmea_checksum(const char *szNMEA);
 void ble_uart_init() {
 	NimBLEDevice::init("BLE-Vario");
 	NimBLEDevice::setMTU(46);
-	NimBLEDevice::setPower(ESP_PWR_LVL_N27);
+	// default power level is +3dB, max +9dB
+	//NimBLEDevice::setPower(ESP_PWR_LVL_N3); // -3dB
+	NimBLEDevice::setPower(ESP_PWR_LVL_N0); // 0dB
+    //NimBLEDevice::setPower(ESP_PWR_LVL_P6);  // +6db 
+
 	NimBLEDevice::setSecurityAuth(true, true, true);
 	NimBLEDevice::setSecurityPasskey(123456);
 	NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);

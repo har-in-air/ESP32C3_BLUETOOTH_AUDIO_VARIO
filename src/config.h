@@ -144,7 +144,8 @@
 #define GYRO_OFFSET_LIMIT_1000DPS   200
 
 // print debug information to the serial port for different code modules
-
+// For revB hardware, after flashing the code and validating the calibration parameters look reasonable,
+// ensure this is commented out
 #define TOP_DEBUG
 #ifdef TOP_DEBUG
 	#define dbg_println(x) {Serial.println x;}
