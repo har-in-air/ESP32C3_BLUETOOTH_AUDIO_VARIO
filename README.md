@@ -1,4 +1,8 @@
 # ESP32C3_BLUETOOTH_AUDIO_VARIO
+
+<img src="docs/RevB_powered_on.jpg">
+
+
  Accurate, zero-lag audio variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
  This project uses the [KF4D kalman filter algorithm from the ESP32_IMU_GPS_BARO_VARIO project](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO/blob/master/offline/kf/compare_kf2_kf3_kf4.ipynb).
 
@@ -109,6 +113,9 @@ The vario will power off automatically to save battery life if it does not detec
 
 ### Bluetooth LK8EX1
 If you enable this option, the vario will transmit $LK8EX1 sentences using the Bluetooth LE protocol at 10Hz. The Bluetooth device name is `BLE-Vario`.
+
+`XCDisplay` app on Apple iPhone connected to the vario, displaying pressure altitude and climbrate.
+<img src="docs/XCDisplay.png">
 
 # Usage
 
