@@ -106,7 +106,9 @@ The crossover climbrate is used to adjust the frequency discrimination. The vari
 above the threshold. So if the expected average thermal strength is +5m/s, set the threshold to 500.
 
 ### Kalman Filter configuration
-Set the variance parameter lower for sites/conditions with soft, wide & smooth-edged thermals. Set the parameter higher for conditions with strong, narrow & hard-edged thermals.
+Set the `variance` parameter lower for conditions with soft, wide and smooth-edged thermals. Set the parameter higher for conditions with strong, narrow and hard-edged thermals.
+
+The `adapt` parameter will probably be removed after flight trials. Higher values add more uncertainty into the Kalman filter so it can respond to high acceleration transitions quickly, while maintaining a high degree of damping in zero acceleration conditions.
 
 ### Inactivity Time-out
 The vario will power off automatically to save battery life if it does not detect climb/sink rates beyond a minimum threshold within a specified interval (specified in minutes). If you often stand on the launch site for several minutes, hooked-up to the glider and waiting for launch conditions to improve, use a larger time-out.
@@ -122,16 +124,29 @@ If you enable this option, the vario will transmit $LK8EX1 sentences using the B
 ## Power On 
 To power on, press the `PWR` button and hold (~1 second) until you see the power/bluetooth LED turn on. Release.
 
+The vario will first indicate the battery charge status with a series of long beeps. 5 beeps for fully charged, 1 beep for discharged.
+
+After a pause, the vario will indicate the countdown to gyro calibration with a series of 10 shorter beeps. You should ensure the vario is left undisturbed, in any orientation (do not hold it in your hand). At the end of the countdown and a brief pause, you may hear an initial squawk as the filter initializes, but it should settle down in a few seconds. Now the vario is operational and providing audio feedback.
+
+If you want to force accelerometer re-calibration, press the `PCCA` button during the gyro calibration countdown. Now the vario will start a 50 short beep countdown at a fast rate. At this point you should place the vario flat on a horizontal surface (confirm with a bubble level if possible) without any disturbance, vibrations etc. Do not hold or press down on the vario case. At the end of the 50 beeps, the accelerometer will be calibrated, and then the countdown to gyro calibration will start.
+
+### Power/Bluetooth LED
 If Bluetooth transmission is disabled, the power/bluetooth LED will stay on.
 
 If Bluetooth transmission is enabled, the power/bluetooth LED will start blinking once every 2 seconds after transmission starts.
 
-## Power Off
-To power off, press the `PWR` button and hold (~2 seconds) until you hear a confirmation audio tone. If the power/bluetooth LED was on, it will turn off as well. Release.
-
-## Audio Mute 
+### Audio Mute 
 When the vario has finished initialization and is providing vario audio feedback, a brief press of the `PCCA` button  will toggle the audio on / off.
 
 This is convenient if you have set the zero-tone threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are hooked in to the glider and waiting to launch.
+
+## Power Off
+To power off, press the `PWR` button and hold (~2 seconds) until you hear a confirmation audio tone. If the power/bluetooth LED was on, it will turn off as well. Release.
+
+# Credits
+
+Prototype design, component sourcing, PCB assembly and testing in collaboration with Benoit Arnal.
+ 
+
 
 
