@@ -105,10 +105,10 @@
 
 //#define USE_9DOF_AHRS
 
-#define PWR_CTRL_TASK_PRIORITY	1
-#define BLE_TASK_PRIORITY		2
-#define WIFI_CFG_TASK_PRIORITY	2
-#define VARIO_TASK_PRIORITY		(configMAX_PRIORITIES-1)
+#define PWR_CTRL_TASK_PRIORITY	2
+#define BLE_TASK_PRIORITY		3
+#define WIFI_CFG_TASK_PRIORITY	3
+#define VARIO_TASK_PRIORITY		(configMAX_PRIORITIES-2)
 
 // change these parameters based on the frequency bandwidth of the speaker
 #define VARIO_SPKR_MIN_FREQHZ      	200
