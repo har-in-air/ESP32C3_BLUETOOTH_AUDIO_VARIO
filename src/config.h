@@ -125,6 +125,9 @@
 // For revB hardware, after flashing the code and validating the calibration parameters look reasonable,
 // ensure this is commented out
 #define TOP_DEBUG
+#if ARDUINO_USB_MODE==1
+#define Serial USBSerial
+#endif
 #ifdef TOP_DEBUG
 	#define dbg_println(x) {Serial.println x;}
 	#define dbg_printf(x)  {Serial.printf x;}
