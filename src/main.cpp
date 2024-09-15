@@ -83,11 +83,10 @@ void setup() {
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG   
-#ifdef HW_REV_B 
+#if ARDUINO_USB_MODE==1
 	// Serial print redirected to USB CDC port (on Ubuntu, shows up as /dev/ttyACMx)
 	Serial.begin();
-#endif	
-#ifdef HW_REV_A 
+#else
 	// Serial print to uart port. Requires external USB-uart adapter (on Ubuntu, shows up as /dev/ttyUSBx)
 	Serial.begin(115200);
 #endif
