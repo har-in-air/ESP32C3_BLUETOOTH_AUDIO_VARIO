@@ -22,7 +22,7 @@ NimBLECharacteristic* pRxCharacteristic = NULL;
 static uint8_t ble_uart_nmea_checksum(const char *szNMEA);
 
 void ble_uart_init() {
-	NimBLEDevice::init("BLE-Vario");
+	NimBLEDevice::init("Bavario");
 	NimBLEDevice::setMTU(46);
 	// default power level is +3dB, max +9dB
 	//NimBLEDevice::setPower(ESP_PWR_LVL_N3); // -3dB
@@ -44,7 +44,7 @@ void ble_uart_init() {
 
 	pService->start();
 	pBLEServer->getAdvertising()->start();
-	}
+}
 
 
 static uint8_t ble_uart_nmea_checksum(const char *szNMEA){
@@ -55,9 +55,16 @@ static uint8_t ble_uart_nmea_checksum(const char *szNMEA){
 		sz++;
 		}
 	return cksum;
-	}
-
+}
    
+void ble_uart_transmit(const char *msg) {
+#ifdef BLE_DEBUG	
+    dbg_printf(("bleTX: %s", msg)); 
+#endif
+	pTxCharacteristic->setValue((const uint8_t*)msg, strlen(msg));
+	pTxCharacteristic->notify();   
+}
+
 void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batVoltage) {
 	char szmsg[40];
 	sprintf(szmsg, "$LK8EX1,999999,%d,%d,99,%.1f*", altm, cps, batVoltage);
@@ -65,9 +72,5 @@ void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batVoltage) {
 	char szcksum[5];
 	sprintf(szcksum,"%02X\r\n", cksum);
 	strcat(szmsg, szcksum);
-#ifdef BLE_DEBUG	
-    dbg_printf(("%s", szmsg)); 
-#endif
-	pTxCharacteristic->setValue((const uint8_t*)szmsg, strlen(szmsg));
-	pTxCharacteristic->notify();   
-	}
+	ble_uart_transmit(szmsg);
+}

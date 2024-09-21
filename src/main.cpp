@@ -166,21 +166,37 @@ static void power_off() {
 
 
 static void ble_task(void* pvParameter){
+	char gpsSentence[80];
+	char *pGps = gpsSentence;
+	HardwareSerial gpsSerial(0);
+	gpsSerial.begin(9600, SERIAL_8N1, RX, TX);
+	while(!gpsSerial)
+		delay(100);
 	ble_uart_init();
 	int counter = 0;
 	dbg_println(("\nBluetooth LE LK8EX1 messages @ 10Hz\n"));
-	while (1) {
-		counter++;
-		if (counter > 9) {
-			counter = 0;
-			LEDState = !LEDState;
-			digitalWrite(pinLED, LEDState);
+	for(;;) {
+		while( gpsSerial.available() ) {
+			*pGps++ = gpsSerial.read();
+			if( *(pGps-1) == '\n' && *(pGps-2) == '\r' ) {
+				*pGps = '\0';
+				ble_uart_transmit(gpsSentence);
+				pGps = gpsSentence;
 			}
+			if( pGps - sizeof(gpsSentence) > gpsSentence ) // Sentence too long
+				pGps = gpsSentence; // skip it
+		}
+		counter++;
+		if (counter >= 10/portTICK_PERIOD_MS) {
+			counter = 0;
+			LEDState = !LEDState; // Toggle every second
+			digitalWrite(pinLED, LEDState);
+		}
 		BatteryVoltage = adc_battery_voltage();
 		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, BatteryVoltage);				
 		vTaskDelay(100/portTICK_PERIOD_MS);
-		}
 	}
+}
 
 
 static void pwr_ctrl_task(void* pvParameter){
