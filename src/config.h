@@ -1,25 +1,24 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#if ARDUINO_USB_MODE == 0
+#define pinPCCA		27	// program/configure/calibrate/audio button
+#define pinAudio	14	// pwm beeper audio output
+#define pinAudioEn	15	// 74HC240 output enables, active low
 
-#ifdef HW_REV_A
-#define pinPCCA		9	// program/configure/calibrate/audio button
-#define pinAudio	4	// pwm beeper audio output
-#define pinAudioEn	3	// 74HC240 output enables, active low
+#define pinPwrSens	21	// detect power on/off button press
+#define pinPwrCtrl	16	// power on/off
 
-#define pinPwrSens	1	// detect power on/off button press
-#define pinPwrCtrl	2	// power on/off
+#define pinCSB		20	// CSB (ms5611)
+#define pinMISO		1	// SDO ms5611 & AD0 mpu9250
+#define pinNCS		3 	// NCS (mpu9250)
+#define pinMOSI		4 	// SDA
+#define pinSCK		5	// SCL
+#define pinDRDYInt	2  	// INT
+#define pinLED		0	// power-on and bluetooth active indication
 
-#define pinCSB		5	// CSB (ms5611)
-#define pinMISO		7	// SDO ms5611 & AD0 mpu9250
-#define pinNCS		10 	// NCS (mpu9250)
-#define pinMOSI		18 	// SDA
-#define pinSCK		19	// SCL
-#define pinDRDYInt	6  	// INT
-#define pinLED		8	// power-on and bluetooth active indication
-#endif
+#else
 
-#ifdef HW_REV_B
 #define pinPCCA		9	// program/configure/calibrate/audio button
 #define pinAudio	7	// pwm beeper audio output
 #define pinAudioEn	6	// 74HC240 output enables, active low
@@ -34,10 +33,7 @@
 #define pinSCK		5	// SCL
 #define pinDRDYInt	2  	// INT
 #define pinLED		8	// power-on and bluetooth active indication
-
-#define Serial USBSerial
 #endif
-
 
 #define BTN_PCCA()  (digitalRead(pinPCCA) == HIGH ? 1 : 0)
 
@@ -147,6 +143,9 @@
 // For revB hardware, after flashing the code and validating the calibration parameters look reasonable,
 // ensure this is commented out
 #define TOP_DEBUG
+#if ARDUINO_USB_MODE==1
+#define Serial USBSerial
+#endif
 #ifdef TOP_DEBUG
 	#define dbg_println(x) {Serial.println x;}
 	#define dbg_printf(x)  {Serial.printf x;}

@@ -77,17 +77,15 @@ void setup() {
 
 	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // power/bluetooth LED, active low
 	LED_OFF();
-	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
-	digitalWrite(pinAudioEn, HIGH);
+	audio_init();
 
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG   
-#ifdef HW_REV_B 
+#if ARDUINO_USB_MODE==1
 	// Serial print redirected to USB CDC port (on Ubuntu, shows up as /dev/ttyACMx)
 	Serial.begin();
-#endif	
-#ifdef HW_REV_A 
+#else
 	// Serial print to uart port. Requires external USB-uart adapter (on Ubuntu, shows up as /dev/ttyUSBx)
 	Serial.begin(115200);
 #endif
@@ -97,8 +95,6 @@ void setup() {
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
 	LED_ON();
-	digitalWrite(pinAudioEn, LOW);
-	spi_init();
 
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
 	dbg_printf(("Firmware Revision %s\n", FwRevision));
@@ -136,7 +132,9 @@ void setup() {
   Serial.print(Freq);
   Serial.println(" Hz");		
    	
+#ifdef PWR_CTRL
 	xTaskCreate( pwr_ctrl_task, "pwr_ctrl_task", 1024, NULL, PWR_CTRL_TASK_PRIORITY, NULL );
+#endif
 	if (bWebConfigure == true) {
 		dbg_println(("Web configuration mode"));
 		// 3 second long tone with low frequency to indicate unit is now in web server configuration mode.
@@ -161,7 +159,9 @@ static void power_off() {
 	LED_OFF();
 	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
 	audio_off();
+#ifdef PWR_CTRL
 	esp_deep_sleep_start(); // required as button is still pressed
+#endif
 	}
 
 
@@ -246,6 +246,8 @@ static void vario_task(void * pvParameter) {
 	int pwrOffCounter, baroCounter, drdyCounter;
 	int pwrOffTimeoutSecs;
 
+#ifdef SPI_SENSORS
+	spi_init();
 	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
@@ -286,6 +288,7 @@ static void vario_task(void * pvParameter) {
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with MS5611 estimated altitude, estimated initial climbrate = 0.0
 	kalmanFilter4d_configure(1000.0f*(float)Config.kf.accelVariance, ((float)Config.kf.adapt)/100.0f, Baro.altitudeCmAvg, 0.0f, 0.0f);
+#endif
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
