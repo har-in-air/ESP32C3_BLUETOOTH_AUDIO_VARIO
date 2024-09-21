@@ -180,7 +180,8 @@ static void ble_task(void* pvParameter){
 			*pGps++ = gpsSerial.read();
 			if( *(pGps-1) == '\n' && *(pGps-2) == '\r' ) {
 				*pGps = '\0';
-				ble_uart_transmit(gpsSentence);
+				if( strstr(gpsSentence, "$GPRMC") || strstr(gpsSentence, "$GPGGA") )
+					ble_uart_transmit(gpsSentence);
 				pGps = gpsSentence;
 			}
 			if( pGps - sizeof(gpsSentence) > gpsSentence ) // Sentence too long
