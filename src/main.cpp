@@ -95,7 +95,6 @@ void setup() {
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
 	LED_ON();
-	spi_init();
 
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
 	dbg_printf(("Firmware Revision %s\n", FwRevision));
@@ -247,6 +246,8 @@ static void vario_task(void * pvParameter) {
 	int pwrOffCounter, baroCounter, drdyCounter;
 	int pwrOffTimeoutSecs;
 
+#ifdef SPI_SENSORS
+	spi_init();
 	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {
 		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
@@ -287,6 +288,7 @@ static void vario_task(void * pvParameter) {
 	dbg_println(("\nKalmanFilter config"));
 	// initialize kalman filter with MS5611 estimated altitude, estimated initial climbrate = 0.0
 	kalmanFilter4d_configure(1000.0f*(float)Config.kf.accelVariance, ((float)Config.kf.adapt)/100.0f, Baro.altitudeCmAvg, 0.0f, 0.0f);
+#endif
 
 	if (Config.misc.bleEnable) {
 		xTaskCreate(ble_task, "ble_task", 4096, NULL, BLE_TASK_PRIORITY, NULL );
