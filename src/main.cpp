@@ -77,8 +77,7 @@ void setup() {
 
 	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // power/bluetooth LED, active low
 	LED_OFF();
-	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
-	digitalWrite(pinAudioEn, HIGH);
+	audio_init();
 
 	wifi_off(); // turn off radio to save power
 
@@ -96,7 +95,6 @@ void setup() {
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
 	LED_ON();
-	digitalWrite(pinAudioEn, LOW);
 	spi_init();
 
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
@@ -135,7 +133,9 @@ void setup() {
   Serial.print(Freq);
   Serial.println(" Hz");		
    	
+#ifdef PWR_CTRL
 	xTaskCreate( pwr_ctrl_task, "pwr_ctrl_task", 1024, NULL, PWR_CTRL_TASK_PRIORITY, NULL );
+#endif
 	if (bWebConfigure == true) {
 		dbg_println(("Web configuration mode"));
 		// 3 second long tone with low frequency to indicate unit is now in web server configuration mode.
@@ -160,7 +160,9 @@ static void power_off() {
 	LED_OFF();
 	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
 	audio_off();
+#ifdef PWR_CTRL
 	esp_deep_sleep_start(); // required as button is still pressed
+#endif
 	}
 
 

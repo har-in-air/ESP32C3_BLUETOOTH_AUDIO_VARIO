@@ -3,12 +3,17 @@
 #include "audio.h"
 
 bool IsMuted = false;
-static void audio_tone(int freqHz, int milliseconds);
+static const uint8_t channel = 0;
+
+void audio_init(void) {
+	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
+	digitalWrite(pinAudioEn, HIGH);
+	ledcWrite(channel, 2048);
+	ledcAttachPin(pinAudio, channel);
+}
 
 static void audio_tone(int freqHz, int milliseconds) {
-	uint8_t channel = 0;
 	digitalWrite(pinAudioEn, 0);
-	ledcAttachPin(pinAudio, channel);
 	ledcWriteTone(channel, freqHz);
 	delay(milliseconds);
 	audio_off();
@@ -16,10 +21,8 @@ static void audio_tone(int freqHz, int milliseconds) {
 
 
 void audio_off() {
-	uint8_t channel = 0;
 	digitalWrite(pinAudioEn, 1);
 	ledcWrite(channel, 0);
-	ledcDetachPin(pinAudio);
 	pinMode(pinAudio, OUTPUT);
 	digitalWrite(pinAudio, 0);
 	}
@@ -35,8 +38,6 @@ void audio_beep(int freqHz, int onMs, int offMs, int numBeeps) {
 
 void audio_set_frequency(int freqHz) {
 	if (!IsMuted) {
-		uint8_t channel = 0;
-		ledcAttachPin(pinAudio, channel);
 		if (freqHz > 0) {
 			digitalWrite(pinAudioEn, 0);
 			ledcWriteTone(channel, freqHz);	
