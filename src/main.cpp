@@ -165,7 +165,8 @@ static void power_off() {
 	}
 
 
-static void ble_task(void* pvParameter){
+static void ble_task(void* pvParameter) {
+	char gpsSentence[160];
 	char *pGps = gpsSentence;
 	HardwareSerial gpsSerial(0);
 	gpsSerial.begin(9600, SERIAL_8N1, RX, TX);
@@ -193,6 +194,12 @@ static void ble_task(void* pvParameter){
 			digitalWrite(pinLED, LEDState);
 		}
 		BatteryVoltage = adc_battery_voltage();
+#ifndef SPI_SENSORS
+		// Simulate some values for testing
+		ClimbrateCps = 500 * sin((3.1415f * 2.0f * (millis() % 10000))/10000);
+		AltitudeM = (millis()/1000)%3000;
+		BatteryVoltage = 1050.0f + 50.0f * cos((3.1415f * 2.0f * (millis() % 100000))/100000);
+#endif
 		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, BatteryVoltage);				
 		vTaskDelay(100/portTICK_PERIOD_MS);
 	}
@@ -316,7 +323,7 @@ static void vario_task(void * pvParameter) {
 	ui_btn_init();	
 	// interrupt output of MPU9250 is configured as push-pull, active high pulse. This is connected to
 	// pinDRDYInt which has an external 10K pull-down resistor
-	pinMode(pinDRDYInt, INPUT); 
+	pinMode(pinDRDYInt, INPUT_PULLDOWN); 
     DrdySemaphore = xSemaphoreCreateBinary();
 	baroCounter = pwrOffCounter = drdyCounter = 0;
 	pwrOffTimeoutSecs = 0;
