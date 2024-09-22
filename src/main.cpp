@@ -166,7 +166,6 @@ static void power_off() {
 
 
 static void ble_task(void* pvParameter){
-	char gpsSentence[80];
 	char *pGps = gpsSentence;
 	HardwareSerial gpsSerial(0);
 	gpsSerial.begin(9600, SERIAL_8N1, RX, TX);
@@ -178,7 +177,7 @@ static void ble_task(void* pvParameter){
 	for(;;) {
 		while( gpsSerial.available() ) {
 			*pGps++ = gpsSerial.read();
-			if( *(pGps-1) == '\n' && *(pGps-2) == '\r' ) {
+			if( *(pGps-1) == '\n' && *(pGps-2) == '\r' ) { // Sentence ends with "\r\n"
 				*pGps = '\0';
 				if( strstr(gpsSentence, "$GPRMC") || strstr(gpsSentence, "$GPGGA") )
 					ble_uart_transmit(gpsSentence);
