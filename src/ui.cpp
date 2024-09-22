@@ -75,7 +75,6 @@ void ui_indicate_fault_MPU9250() {
 
 void ui_indicate_battery_voltage(float batV) {
 	int numBeeps;
-	dbg_printf(("\r\nBattery voltage = %.2fV\r\n", batV ));
 
 	if (batV >= 4.0f) numBeeps = 5;
 	else
@@ -85,11 +84,9 @@ void ui_indicate_battery_voltage(float batV) {
 	else
 	if (batV >= 3.6f) numBeeps = 2;
 	else numBeeps = 1;
-	while (numBeeps--) {
-		audio_generate_tone(BATTERY_TONE_HZ, 300);
-		delay(300);
-		}
-	}
+	dbg_printf(("\r\nBattery voltage = %.2fV (beeps = %d)\r\n", batV, numBeeps));
+	audio_generate_tone(BATTERY_TONE_HZ, 100, 100, numBeeps);
+}
    
 
 void ui_calibrate_accel(CALIB_PARAMS_t &calib) {    

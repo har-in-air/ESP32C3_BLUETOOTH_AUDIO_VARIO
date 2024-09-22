@@ -158,7 +158,6 @@ static void power_off() {
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
 	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
-	audio_off();
 #ifdef PWR_CTRL
 	esp_deep_sleep_start(); // required as button is still pressed
 #endif
@@ -318,6 +317,8 @@ static void vario_task(void * pvParameter) {
 		}
 
 	vaudio_config();  
+	audio_toggle_mute(); // Unmutes audio to start with
+
 	timeNowUs = timePreviousUs = micros();
 	ringbuf_init(); 
 	ui_btn_init();	
@@ -409,8 +410,7 @@ static void vario_task(void * pvParameter) {
 			
 		if (BtnPCCAPressed) {
 			BtnPCCAPressed = false;
-			IsMuted = !IsMuted;
-			if (IsMuted) audio_off();
+			audio_toggle_mute();
 			}	
 		uint32_t elapsedUs =  micros() - marker; // calculate time  taken to read and process the data, must be less than 2mS
 		if (drdyCounter >= 500) {
