@@ -10,6 +10,9 @@
 #define V2		4.080f
 #define ADC2	908.0f
 
+static const float battery_max = 4.20; //maximum voltage of battery
+static const float battery_min = 3.0;  //minimum voltage of battery before shutdown
+
 static float BatteryVoltage;
 
 static void adc_update_average_battery_voltage(unsigned nr_of_samples) {
@@ -37,4 +40,12 @@ void adc_update_battery_voltage(void) {
 
 float adc_get_battery_voltage(void) {
 	return BatteryVoltage;
+}
+
+float adc_get_battery_percentage(void) {
+	float percentage = ((BatteryVoltage - battery_min) / (battery_max - battery_min)) * 100;
+    if (percentage < 100)
+        return percentage;
+    else
+        return 100.0f;
 }

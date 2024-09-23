@@ -196,7 +196,7 @@ static void ble_task(void* pvParameter) {
 		ClimbrateCps = 500 * sin((3.1415f * 2.0f * (millis() % 10000))/10000);
 		AltitudeM = (millis()/1000)%3000;
 #endif
-		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, adc_get_battery_voltage());				
+		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, adc_get_battery_percentage());				
 		vTaskDelay(100/portTICK_PERIOD_MS);
 	}
 }
