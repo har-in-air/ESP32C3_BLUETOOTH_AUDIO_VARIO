@@ -65,9 +65,9 @@ void ble_uart_transmit(const char *msg) {
 	pTxCharacteristic->notify();   
 }
 
-void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batVoltage) {
+void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batPercentage) {
 	char szmsg[40];
-	sprintf(szmsg, "$LK8EX1,999999,%d,%d,99,%.1f*", altm, cps, batVoltage);
+	sprintf(szmsg, "$LK8EX1,999999,%d,%d,99,%.0f*", altm, cps, 1000.0f + batPercentage);
 	uint8_t cksum = ble_uart_nmea_checksum(szmsg);
 	char szcksum[5];
 	sprintf(szcksum,"%02X\r\n", cksum);

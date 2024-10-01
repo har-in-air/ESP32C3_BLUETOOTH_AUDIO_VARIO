@@ -103,8 +103,6 @@ void setup() {
 	nvd_config_load(Config);
 	nvd_calib_load(Calib);
 	adc_init();
-	int adcVal = adc_sample_average();
-	BatteryVoltage = adc_battery_voltage(adcVal);
 
 	bWebConfigure = false;
 	dbg_println(("To start web configuration mode, press and hold the PCC button"));
@@ -146,7 +144,7 @@ void setup() {
   	else {
 		dbg_println(("Vario mode"));
 		dbg_println(("\nAudio indication of battery voltage"));
-		ui_indicate_battery_voltage(BatteryVoltage);
+		ui_indicate_battery_voltage(adc_get_battery_voltage());
     	xTaskCreate( vario_task, "vario_task", 4096, NULL, VARIO_TASK_PRIORITY, NULL );
 		}
 	// delete the loopTask which called setup() from arduino app_main()
@@ -187,19 +185,18 @@ static void ble_task(void* pvParameter) {
 				pGps = gpsSentence; // skip it
 		}
 		counter++;
-		if (counter >= 10/portTICK_PERIOD_MS) {
+		if (counter >= 10) {
 			counter = 0;
 			LEDState = !LEDState; // Toggle every second
 			digitalWrite(pinLED, LEDState);
+			adc_update_battery_voltage();
 		}
-		BatteryVoltage = adc_battery_voltage();
 #ifndef SPI_SENSORS
 		// Simulate some values for testing
 		ClimbrateCps = 500 * sin((3.1415f * 2.0f * (millis() % 10000))/10000);
 		AltitudeM = (millis()/1000)%3000;
-		BatteryVoltage = 1050.0f + 50.0f * cos((3.1415f * 2.0f * (millis() % 100000))/100000);
 #endif
-		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, BatteryVoltage);				
+		ble_uart_transmit_LK8EX1(AltitudeM, ClimbrateCps, adc_get_battery_percentage());				
 		vTaskDelay(100/portTICK_PERIOD_MS);
 	}
 }
