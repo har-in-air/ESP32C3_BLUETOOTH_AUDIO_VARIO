@@ -21,6 +21,7 @@ static void audio_off() {
 
 void audio_toggle_mute() {
 	IsMuted = !IsMuted;
+	dbg_printf(("Audio is now %smuted\n", IsMuted ? "" : "NOT "));
 	if( IsMuted )
 		audio_off();
 	else
@@ -29,6 +30,7 @@ void audio_toggle_mute() {
 
 void audio_init(void) {
 	pinMode(pinAudioEn, OUTPUT_OPEN_DRAIN); // output enable for 74HC240, active low
+	ledcSetup(channel, 1000, 14);
 	IsMuted = false;
 	audio_toggle_mute();
 }
@@ -46,13 +48,15 @@ void audio_generate_tone(int freqHz, int msOn, int msOff, int numBeeps) {
 
 void audio_set_frequency(int freqHz) {
 	if (!IsMuted) {
+		// dbg_printf(("Freq to hear: %d\n", freqHz));
 		if (freqHz > 0) {
+			audio_on();
 			digitalWrite(pinAudioEn, LOW);
 			ledcWriteTone(channel, freqHz);	
 		}
 		else {
 			digitalWrite(pinAudioEn, HIGH);
-			ledcWriteTone(channel, 1);	
+			audio_off();
 		}
 	}
 }
