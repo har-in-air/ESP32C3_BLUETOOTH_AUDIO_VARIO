@@ -18,19 +18,18 @@
 #define pinLED		0	// power-on and bluetooth active indication
 
 #else
-
-#define pinPCCA		9	// program/configure/calibrate/audio button
+#define pinPCCA		5	// program/configure/calibrate/audio button
 #define pinAudio	7	// pwm beeper audio output
 #define pinAudioEn	6	// 74HC240 output enables, active low
 
 #define pinPwrSens	21	// detect power on/off button press
 #define pinPwrCtrl	10	// power on/off
 
-#define pinCSB		20	// CSB (ms5611)
-#define pinMISO		1	// SDO ms5611 & AD0 mpu9250
+#define pinCSB		4	// CSB (ms5611)
+#define pinMISO		9	// SDO ms5611 & AD0 mpu9250
 #define pinNCS		3 	// NCS (mpu9250)
-#define pinMOSI		4 	// SDA
-#define pinSCK		5	// SCL
+#define pinMOSI		10 	// SDA
+#define pinSCK		8	// SCL
 #define pinDRDYInt	2  	// INT
 #define pinLED		8	// power-on and bluetooth active indication
 #endif
@@ -99,7 +98,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // COMPILED CONFIGURATION PARAMETERS ( cannot be changed with web configuration )
 
-//#define USE_9DOF_AHRS
+// #define USE_9DOF_AHRS
 
 #define PWR_CTRL_TASK_PRIORITY	2
 #define BLE_TASK_PRIORITY		3
@@ -166,8 +165,7 @@
 
 // !! ensure these #defines are commented out after debugging, as the 
 // enclosed debug prints are in the critical run-time loop.
-//#define IMU_DEBUG
-//#define PERF_DEBUG
-//#define BLE_DEBUG
+// #define IMU_DEBUG
+// #define BLE_DEBUG
 
 #endif
