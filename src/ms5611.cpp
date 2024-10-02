@@ -230,11 +230,11 @@ int MS5611::read_prom(void)    {
 		spi_read_buffer(spiBaro, 0xA0 + inx*2, 2, buf);
 		prom[inx] = ((uint16_t)buf[0])<<8 | (uint16_t)buf[1];
 		}			
-	//dbg_printf(("\r\nProm : "));
-	//for (int inx = 0; inx < 16; inx++) {
-	//	dbg_printf(("0x%02x ", prom_[inx]));
-	//	}
-	//dbg_println(());
+	dbg_printf(("\r\nProm : "));
+	for (int inx = 0; inx < 16; inx++) {
+		dbg_printf(("0x%02x ", prom[inx]));
+		}
+	dbg_println(());
 	uint8_t crcPROM = (uint8_t)(prom[7] & 0x000F);
 	uint8_t crcCalculated = crc4(prom);
 	dbg_printf(("crcPROM = 0x%X, crc calculated = 0x%X\n", crcPROM, crcCalculated));

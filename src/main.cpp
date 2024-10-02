@@ -71,10 +71,6 @@ static void IRAM_ATTR drdy_interrupt_handler() {
 
 void setup() {
 	pinMode(pinPCCA, INPUT_PULLUP); //  Program/Configure/Calibrate/Audio Mute Button
-	pinMode(pinPwrCtrl, OUTPUT); // soft-switch power on/off
-	digitalWrite(pinPwrCtrl, LOW);
-	pinMode(pinPwrSens, INPUT); // to detect  power-off button press
-
 	pinMode(pinLED, OUTPUT_OPEN_DRAIN); // power/bluetooth LED, active low
 	LED_OFF();
 	audio_init();
@@ -91,9 +87,14 @@ void setup() {
 #endif
 #endif
 
+#ifdef PWR_CTRL
+	pinMode(pinPwrCtrl, OUTPUT); // soft-switch power on/off
+	digitalWrite(pinPwrCtrl, LOW);
+	pinMode(pinPwrSens, INPUT); // to detect  power-off button press
 	// PWR button needs to be pressed for one second to switch on
 	delay(1000);
 	digitalWrite(pinPwrCtrl, HIGH);
+#endif
 	LED_ON();
 
 	dbg_printf(("\n\nESP32-C3 BLUETOOTH VARIO compiled on %s at %s\n", __DATE__, __TIME__));
@@ -153,26 +154,29 @@ void setup() {
 
 
 static void power_off() {
+#ifdef PWR_CTRL
 	digitalWrite(pinPwrCtrl, LOW);
 	LED_OFF();
 	audio_generate_tone(200, 1000); // when you hear the tone, you can release the power button.
-#ifdef PWR_CTRL
 	esp_deep_sleep_start(); // required as button is still pressed
 #endif
-	}
+}
 
 
 static void ble_task(void* pvParameter) {
+#ifdef GPS_CONNECTED
 	char gpsSentence[160];
 	char *pGps = gpsSentence;
-	HardwareSerial gpsSerial(0);
-	gpsSerial.begin(9600, SERIAL_8N1, RX, TX);
+	HardwareSerial gpsSerial(1);
+	gpsSerial.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX);
 	while(!gpsSerial)
 		delay(100);
+#endif
 	ble_uart_init();
 	int counter = 0;
 	dbg_println(("\nBluetooth LE LK8EX1 messages @ 10Hz\n"));
 	for(;;) {
+#ifdef GPS_CONNECTED
 		while( gpsSerial.available() ) {
 			*pGps++ = gpsSerial.read();
 			if( *(pGps-1) == '\n' && *(pGps-2) == '\r' ) { // Sentence ends with "\r\n"
@@ -184,6 +188,7 @@ static void ble_task(void* pvParameter) {
 			if( pGps - sizeof(gpsSentence) > gpsSentence ) // Sentence too long
 				pGps = gpsSentence; // skip it
 		}
+#endif
 		counter++;
 		if (counter >= 10) {
 			counter = 0;
@@ -269,9 +274,9 @@ static void vario_task(void * pvParameter) {
 	spi_init();
 	dbg_println(("\nCheck communication with MS5611"));
 	if (!Baro.read_prom()) {
-		dbg_println(("Bad CRC read from MS5611 calibration PROM"));
+		dbg_println(("Bad CRC read from MS5611 calibration PROM")); // PS tied down to select SPI?
 		dbg_flush();
-		ui_indicate_fault_MS5611(); 
+		ui_indicate_fault_MS5611(); // Lot of noise....
 		power_off();
 		}
 	dbg_println(("MS5611 OK"));
@@ -315,6 +320,11 @@ static void vario_task(void * pvParameter) {
 
 	vaudio_config();  
 	audio_toggle_mute(); // Unmutes audio to start with
+	// for(int tone = 200; tone < 10000; tone += 50) {
+	// 	audio_set_frequency(tone);
+	// 	dbg_printf(("Tone: %d\n", tone));
+	// 	delay(25);
+	// }
 
 	timeNowUs = timePreviousUs = micros();
 	ringbuf_init(); 
@@ -392,18 +402,23 @@ static void vario_task(void * pvParameter) {
 				AltitudeM = F_TO_I(kfAltitudeCm/100.0f);
 				ClimbrateCps = F_TO_I(kfClimbrateCps);
 				vaudio_tick_handler(ClimbrateCps); // audio feedback handler
+#ifdef PWR_CTRL
 				if (ABS(ClimbrateCps) > PWR_OFF_THRESHOLD_CPS) { 
 					// reset power-off timeout watchdog if there is significant vertical motion
 					pwrOffTimeoutSecs = 0;
-					}
-				else
+				}
 				if (pwrOffTimeoutSecs >= (Config.misc.pwrOffTimeoutMinutes*60)) {
 					dbg_println(("Timed out with no significant climb/sink, power down"));
 					ui_indicate_power_off();
 					power_off(); 
-					}   
-				}
+				}   
+#endif
+#ifdef ALTI_DEBUG
+				dbg_printf(("/* %.0f, %.0f, %.0f, %.0f */\n", 
+							kfAltitudeCm, Baro.altitudeCm, kfClimbrateCps, zAccelAverage));
+#endif
 			}
+		}
 			
 		if (BtnPCCAPressed) {
 			BtnPCCAPressed = false;
@@ -413,20 +428,23 @@ static void vario_task(void * pvParameter) {
 		if (drdyCounter >= 500) {
 			drdyCounter = 0; // 1 second elapsed
 			pwrOffTimeoutSecs++;
-			#ifdef IMU_DEBUG
-			//float yaw, pitch, roll;
-			//imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
+#ifdef IMU_DEBUG
+			float yaw, pitch, roll;
+			imu_quaternion_to_yaw_pitch_roll(Q0,Q1,Q2,Q3, &yaw, &pitch, &roll);
 			// Pitch is positive for clockwise rotation about the NED frame +Y axis
 			// Roll is positive for clockwise rotation about the NED frame +X axis
 			// Yaw is positive for clockwise rotation about the NED frame +Z axis
 			// If magnetometer isn't used, yaw is initialized to 0 on power up.
-			//dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
-			//dbg_printf(("kv = %d, timeout_counter = %d\n", (int)kfClimbrateCps, pwrOffTimeoutSecs));
-			//dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n",accelmG[0], accelmG[1], accelmG[2]));
-			//dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n",gyroDps[0], gyroDps[1], gyroDps[2]));
-			//dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n",mag[0], mag[1], mag[2]));
-			//dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
-			#endif     
+			dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
+			dbg_printf(("Alt %.0f [cm], BaroAlt = %.0f [cm], Accel: %.0f\n", kfAltitudeCm, Baro.altitudeCm, ringbuf_average_newest_samples(10)));
+			dbg_printf(("kv = %d [cm/s], timeout_counter = %d\n", ClimbrateCps, pwrOffTimeoutSecs));
+			dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n", accelmG[0], accelmG[1], accelmG[2]));
+			dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n", gyroDps[0], gyroDps[1], gyroDps[2]));
+#ifdef USE_9DOF_AHRS		
+			dbg_printf(("mx = %.1f my = %.1f mz = %.1f\n", mag[0], mag[1], mag[2]));
+#endif
+			dbg_printf(("Elapsed %dus\n", (int)elapsedUs)); 
+#endif     
 			}
 		}
 	vTaskDelete(NULL);

@@ -30,8 +30,14 @@ MPU9250::MPU9250() {
 
 int MPU9250::check_id(void) {
 	uint8_t id = spi_read_register(spiImu, R_WHO_AM_I  | SPI_READ);
+#ifdef USE_9DOF_AHRS	
 	dbg_printf(("MPU9250 ID = %02X, expected 0x71\n", id));
 	return (id == 0x71 ? 1 : 0);
+#else
+	// the device from ali seems to be 0x70
+	dbg_printf(("MPU9250 ID = %02X, expected 0x70 //\n", id));
+	return (id == 0x70 ? 1 : 0);
+#endif
 	}
 	
 

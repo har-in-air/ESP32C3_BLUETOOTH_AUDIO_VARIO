@@ -94,10 +94,10 @@ void ui_calibrate_accel(CALIB_PARAMS_t &calib) {
     audio_generate_tone(CALIBRATING_TONE_HZ, 3000);
     dbg_println(("-- Accelerometer calibration --"));
     dbg_println(("Place vario on a level surface with accelerometer z axis vertical and leave it undisturbed"));
-    dbg_println(("You have 10 seconds, counted down with rapid beeps from 50 to 0"));
-    for (int inx = 0; inx < 50; inx++) {
+    dbg_println(("You have 4 seconds, counted down with rapid beeps from 20 to 0"));
+    for (int inx = 0; inx < 20; inx++) {
 		delay(200); 
-		dbg_println((50-inx));
+		dbg_println((20-inx));
 		audio_generate_tone(CALIBRATING_TONE_HZ, 50);
 		}
     dbg_println(("\r\nCalibrating accelerometer"));
@@ -204,9 +204,9 @@ void ui_calibrate_accel_gyro() {
 		}	
 	dbg_println(("Counting down to gyro calibration"));
 	dbg_println(("Press the PCCA button to enforce accelerometer calibration first"));
-	for (int inx = 0; inx < 10; inx++) {
+	for (int inx = 0; inx < 5; inx++) {
 		delay(500); 
-		dbg_println((10-inx));
+		dbg_println((5-inx));
 		audio_generate_tone(CALIBRATING_TONE_HZ, 50); 
 		if (digitalRead(pinPCCA) == 0) {
 			bCalibrateAccel = true;
