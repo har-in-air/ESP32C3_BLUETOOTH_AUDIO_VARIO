@@ -320,6 +320,11 @@ static void vario_task(void * pvParameter) {
 
 	vaudio_config();  
 	audio_toggle_mute(); // Unmutes audio to start with
+	// for(int tone = 200; tone < 10000; tone += 50) {
+	// 	audio_set_frequency(tone);
+	// 	dbg_printf(("Tone: %d\n", tone));
+	// 	delay(25);
+	// }
 
 	timeNowUs = timePreviousUs = micros();
 	ringbuf_init(); 
@@ -408,6 +413,10 @@ static void vario_task(void * pvParameter) {
 					power_off(); 
 				}   
 #endif
+#ifdef ALTI_DEBUG
+				dbg_printf(("/* %.0f, %.0f, %.0f, %.0f */\n", 
+							kfAltitudeCm, Baro.altitudeCm, kfClimbrateCps, zAccelAverage));
+#endif
 			}
 		}
 			
@@ -427,7 +436,7 @@ static void vario_task(void * pvParameter) {
 			// Yaw is positive for clockwise rotation about the NED frame +Z axis
 			// If magnetometer isn't used, yaw is initialized to 0 on power up.
 			dbg_printf(("\nY = %d P = %d R = %d\n", (int)yaw, (int)pitch, (int)roll));
-			dbg_printf(("Alt %.0f [cm], BaroAlt = %.0f [cm]\n", kfAltitudeCm, Baro.altitudeCm));
+			dbg_printf(("Alt %.0f [cm], BaroAlt = %.0f [cm], Accel: %.0f\n", kfAltitudeCm, Baro.altitudeCm, ringbuf_average_newest_samples(10)));
 			dbg_printf(("kv = %d [cm/s], timeout_counter = %d\n", ClimbrateCps, pwrOffTimeoutSecs));
 			dbg_printf(("ax = %.1f ay = %.1f az = %.1f\n", accelmG[0], accelmG[1], accelmG[2]));
 			dbg_printf(("gx = %.1f gy = %.1f gz = %.1f\n", gyroDps[0], gyroDps[1], gyroDps[2]));
