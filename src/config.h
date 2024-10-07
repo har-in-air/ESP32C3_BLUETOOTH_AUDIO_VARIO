@@ -16,8 +16,9 @@
 #define pinSCK		5	// SCL
 #define pinDRDYInt	2  	// INT
 #define pinLED		0	// power-on and bluetooth active indication
-#define GPS_TX 		17
-#define GPS_RX 		-1
+#define pinGpsRx 	17
+#define pinAuxTx	18
+#define portAux		2
 
 #else
 #define pinPCCA		5	// program/configure/calibrate/audio button
@@ -34,8 +35,9 @@
 #define pinSCK		8	// SCL
 #define pinDRDYInt	2  	// INT
 #define pinLED		1	// power-on and bluetooth active indication
-#define GPS_TX 		20
-#define GPS_RX 		-1
+#define pinGpsRx 	20
+#define pinAuxTx	21
+#define portAux	0
 
 #endif
 

@@ -168,7 +168,7 @@ static void ble_task(void* pvParameter) {
 	char gpsSentence[160];
 	char *pGps = gpsSentence;
 	HardwareSerial gpsSerial(1);
-	gpsSerial.begin(9600, SERIAL_8N1, GPS_TX, GPS_RX);
+	gpsSerial.begin(9600, SERIAL_8N1, pinGpsRx, -1);
 	while(!gpsSerial)
 		delay(100);
 #endif
