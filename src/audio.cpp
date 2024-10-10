@@ -7,7 +7,7 @@ static const uint8_t channel = 0;
 
 static void audio_on() {
 	digitalWrite(pinAudioEn, LOW);
-	ledcWrite(channel, 2048);
+	ledcWrite(channel, 0x1FF);
 	ledcAttachPin(pinAudio, channel);
 }
 
@@ -51,11 +51,9 @@ void audio_set_frequency(int freqHz) {
 		// dbg_printf(("Freq to hear: %d\n", freqHz));
 		if (freqHz > 0) {
 			audio_on();
-			digitalWrite(pinAudioEn, LOW);
 			ledcWriteTone(channel, freqHz);	
 		}
 		else {
-			digitalWrite(pinAudioEn, HIGH);
 			audio_off();
 		}
 	}
