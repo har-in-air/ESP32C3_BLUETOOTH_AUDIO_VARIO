@@ -69,11 +69,15 @@ void ble_uart_transmit(const char *msg) {
 #ifdef BLE_DEBUG	
     dbg_printf(("bleTX: %s", msg)); 
 #endif
-	pTxCharacteristic->setValue((const uint8_t*)msg, strlen(msg));
-	pTxCharacteristic->notify();   
 #ifdef AUX_SERIAL
 	auxSerial.write(msg);
 #endif
+	const int maxPacketSize = 20;
+	for(int length = strlen(msg); length > 0; length -= maxPacketSize) {
+		pTxCharacteristic->setValue((const uint8_t*)msg, MIN(maxPacketSize, strlen(msg)));
+		pTxCharacteristic->notify();   
+		msg += maxPacketSize;
+	}
 }
 
 void ble_uart_transmit_LK8EX1(int32_t altm, int32_t cps, float batPercentage) {
