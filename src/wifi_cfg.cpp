@@ -16,7 +16,7 @@ static const char* TAG = "wificfg";
 
 extern const char* FwRevision;
 
-const char* szAPSSID = "Vario-AP";
+const char* szAPSSID = "Bavario-AP";
 const char* szAPPassword = ""; // no password for stand-alone access point
 
 AsyncWebServer* pServer = NULL;
@@ -185,7 +185,7 @@ void wificfg_ap_server_init() {
 	else {
 		wifi_start_as_station();
 		}	
-	if (!MDNS.begin("vario")) { // Use http://vario.local for web server page
+	if (!MDNS.begin("bavario")) { // Use http://bavario.local for web server page
 		dbg_println(("Error starting mDNS service"));
 	    }
     pServer = new AsyncWebServer(80);
