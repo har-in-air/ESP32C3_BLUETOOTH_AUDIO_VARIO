@@ -35,7 +35,6 @@
 #define pinDRDYInt	2  	// INT
 #define pinLED		8	// power-on and bluetooth active indication
 
-#define Serial USBSerial
 #endif
 
 

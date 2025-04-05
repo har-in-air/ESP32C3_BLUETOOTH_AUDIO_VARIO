@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <FS.h>
 #include <LittleFS.h>
+#include <ElegantOTA.h>
 #include "config.h"
 #include "spi.h"
 #include "util.h"
@@ -18,7 +19,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "0.99";
+const char* FwRevision = "1.00";
 
 MPU9250	Imu;
 MS5611	Baro;
@@ -30,7 +31,7 @@ volatile int AltitudeM;
 volatile int ClimbrateCps;
 int LEDState;
 
-static void IRAM_ATTR drdy_interrupt_handler();
+static void drdy_interrupt_handler();
 static void vario_task(void * pvParameter);
 static void wifi_config_task(void * pvParameter);
 static void pwr_ctrl_task(void* pvParameter);
@@ -225,6 +226,7 @@ static void wifi_config_task(void * pvParameter) {
 		}   
 	wificfg_ap_server_init(); 
 	while (1) {
+		ElegantOTA.loop();
 		// nothing to do, async web server 
 		vTaskDelay(1);
 		}
