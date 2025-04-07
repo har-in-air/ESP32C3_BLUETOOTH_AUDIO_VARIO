@@ -2,26 +2,24 @@
 #include "config.h"
 #include "audio.h"
 
-#define DUTY_50_PCNT 2048
-#define DRIVER_ENABLE 0
-#define DRIVER_DISABLE 1
-
 bool IsMuted = false;
+static void audio_tone(int freqHz, int milliseconds);
 
-void audio_generate_tone(int freqHz, int milliseconds) {
-	ledcSetClockSource(LEDC_AUTO_CLK);
-	ledcAttach((uint8_t)pinAudio, (uint32_t)freqHz, 12);
-	ledcWrite((uint8_t)pinAudio, DUTY_50_PCNT);
-	digitalWrite(pinAudioEn, DRIVER_ENABLE);
+static void audio_tone(int freqHz, int milliseconds) {
+	uint8_t channel = 0;
+	digitalWrite(pinAudioEn, 0);
+	ledcAttachPin(pinAudio, channel);
+	ledcWriteTone(channel, freqHz);
 	delay(milliseconds);
 	audio_off();
 	}
 
 
 void audio_off() {
-	digitalWrite(pinAudioEn, DRIVER_DISABLE);
-	ledcWrite((uint8_t)pinAudio, 0);
-	ledcDetach((uint8_t)pinAudio);
+	uint8_t channel = 0;
+	digitalWrite(pinAudioEn, 1);
+	ledcWrite(channel, 0);
+	ledcDetachPin(pinAudio);
 	pinMode(pinAudio, OUTPUT);
 	digitalWrite(pinAudio, 0);
 	}
@@ -29,7 +27,7 @@ void audio_off() {
 
 void audio_beep(int freqHz, int onMs, int offMs, int numBeeps) {
 	while(numBeeps--) {
-		audio_generate_tone(freqHz, onMs);
+		audio_tone(freqHz, onMs);
 		delay(offMs);
 		}
 	}
@@ -37,11 +35,11 @@ void audio_beep(int freqHz, int onMs, int offMs, int numBeeps) {
 
 void audio_set_frequency(int freqHz) {
 	if (!IsMuted) {
+		uint8_t channel = 0;
+		ledcAttachPin(pinAudio, channel);
 		if (freqHz > 0) {
-			ledcSetClockSource(LEDC_AUTO_CLK);
-			ledcAttach((uint8_t)pinAudio, (uint32_t)freqHz, 12);
-			ledcWrite((uint8_t)pinAudio, DUTY_50_PCNT);
-			digitalWrite(pinAudioEn, DRIVER_ENABLE);
+			digitalWrite(pinAudioEn, 0);
+			ledcWriteTone(channel, freqHz);	
 			}
 		else {
 			audio_off();
@@ -50,3 +48,8 @@ void audio_set_frequency(int freqHz) {
 	}
 
 
+void audio_generate_tone(int freqHz, int ms) {
+	digitalWrite(pinAudioEn, 0);
+	audio_tone(freqHz, ms);
+	digitalWrite(pinAudioEn, 1);
+	}
