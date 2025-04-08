@@ -51,29 +51,132 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 * If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
 
 `Rev A hardware`
-* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Connect a slide switch or jumper across the `PWR` button pins. 
-Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the `PCCA` button while turning the slide switch/jumper on. When done flashing, turn off the slide switch/jumper. Without this switch/jumper, you would have to keep the `PWR` button pressed for the full duration of the erase & flash process.
+* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Install a slide switch (`SW1`) or jumper (`JP1`) as per the schematic. 
+Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the `PCCA (SW4)` button. Now turn the slide switch (`SW1`) on or short the `JP1` jumper. Release the `PCCA (SW4)` button. 
 
-* Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary.
+* Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary. When done flashing, turn off the slide switch / open the jumper. Without this switch/jumper, you would have to keep the `PWR (SW3)` button pressed for the full duration of the erase & flash process. Note that this slide switch / jumper must be open for normal vario operation.
 
 * Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
 
 `Rev B hardware`
-* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Press and hold the PCCA button. Now close the flash/debug jumper or slide switch (JP1 or SW2). Release the PCCA button. You will see the CDC port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. Set this new port as the upload and monitor port in platformio.ini.
+* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Press and hold the `PCCA (SW4)` button. Now close the jumper `JP1` or close the slide switch`SW2`. Release the `PCCA (SW4)` button. You will see the USB port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. Set this new port as the upload and monitor port in platformio.ini.
 
 * Select `Build` and then `Upload` to build and flash the application firmware binary.
 
-* To see  serial debug prints and prompts on boot, open the flash/debug jumper / slide switch (JP1/SW2) to turn off the vario. Select `Monitor` in VSC and then switch on the vario using the `PWR` button.  
+* To see  serial debug prints and prompts on boot, open the  jumper (`JP1`) / turn off the slide switch (`SW2`). Select `Monitor` in VSC and then switch on the vario using the `PWR (SW3)` button. Note that the
+serial port may change from the one used for upload e.g. from `ttyACM0` to `ttyACM1`.  Example serial
+terminal output in normal operation : 
+
+```
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x15 (USB_UART_CHIP_RESET),boot:0xc (SPI_FAST_FLASH_BOOT)
+Saved PC:0x42083766
+SPIWP:0xee
+mode:DIO, clock div:2
+load:0x3fcd5810,len:0x438
+load:0x403cc710,len:0x90c
+load:0x403ce710,len:0x2624
+entry 0x403cc710
+E (236) esp_core_dump_flash: No core dump partition found!
+E (236) esp_core_dump_flash: No core dump partition found!
+
+
+ESP32-C3 BLUETOOTH VARIO compiled on Apr  8 2025 at 15:48:49
+Firmware Revision 1.01
+
+Load non-volatile configuration and calibration data from flash
+WiFi AP credentials
+SSID = 
+VARIO
+climbThresholdCps = 50
+zeroThresholdCps = 5
+sinkThresholdCps = -250
+crossoverCps = 400
+KALMAN FILTER
+accelVariance = 100
+adapt = 100
+MISCELLANEOUS
+pwrOffTimeoutMinutes = 10
+bleEnable = true
+Calibration Values
+axBias = -390
+ayBias = -182
+azBias = 234
+gxBias = 17
+gyBias = -7
+gzBias = 22
+To start web configuration mode, press and hold the PCC button
+until you hear a low-frequency tone. Then release the button
+8
+7
+6
+5
+4
+3
+CPU Freq = 80 MHz
+XTAL Freq = 40 MHz
+APB Freq = 80000000 Hz
+Vario mode
+
+Audio indication of battery voltage
+
+Battery voltage = 4.13V
+E (4666) ledc: ledc_get_duty(745): LEDC is not initialized
+
+Check communication with MS5611
+crcPROM = 0x9, crc calculated = 0x9
+MS5611 OK
+
+Check communication with MPU9250
+MPU9250 ID = 71, expected 0x71
+MPU9250 OK
+Counting down to gyro calibration
+Press the PCCA button to enforce accelerometer calibration first
+10
+9
+8
+7
+6
+5
+4
+3
+2
+1
+
+Calibrating gyro
+Num Tries = 1
+gxBias = 18
+gyBias = -7
+gzBias = 22
+Gyro calibration OK
+
+MS5611 config
+MS5611 Calibration Coeffs : 48939 50595 29263 26380 30963 26826
+Tavg : 35C
+Pavg : 90986Pa
+Zavg : 89864cm
+
+KalmanFilter config
+climbToneCps = 50
+zeroesToneCps = 5
+sinkToneCps = -250
+crossoverCps = 400
+
+Bluetooth LE LK8EX1 messages @ 10Hz
+
+```
 
 * For both Rev A and Rev B hardware : After a full chip erase and firmware upload, there is no calibration data. So you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope. Once complete, the calibration parameters will be saved to flash.
-
 [This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
 * The gyroscope is re-calibrated each time on power-up. You should leave the vario un-disturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
 
 
 # WiFi Configuration
 
-To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCCA` button. When you hear a confirmation tone, release the button. 
+To put the vario into WiFi AP server mode, switch on the vario and immediately press and hold the `PCCA (SW4)` button. When you hear a confirmation tone, release the button. 
 
 Connect to the WiFi Access Point `Vario-AP`, no password needed. 
 
@@ -122,13 +225,13 @@ If you enable this option, the vario will transmit $LK8EX1 sentences using the B
 # Usage
 
 ## Power On 
-To power on, press the `PWR` button and hold (~1 second) until you see the power/bluetooth LED turn on. Release.
+To power on, press the `PWR (SW3)` button and hold (~1 second) until you see the power/bluetooth LED turn on. Release.
 
 The vario will first indicate the battery charge status with a series of long beeps. 5 beeps for fully charged, 1 beep for discharged.
 
 After a pause, the vario will indicate the countdown to gyro calibration with a series of 10 shorter beeps. You should ensure the vario is left undisturbed, in any orientation (do not hold it in your hand). At the end of the countdown and a brief pause, you may hear an initial squawk as the filter initializes, but it should settle down in a few seconds. Now the vario is operational and providing audio feedback.
 
-If you want to force accelerometer re-calibration, press the `PCCA` button during the gyro calibration countdown. Now the vario will start a 50 short beep countdown at a fast rate. At this point you should place the vario flat on a horizontal surface (confirm with a bubble level if possible) without any disturbance, vibrations etc. Do not hold or press down on the vario case. At the end of the 50 beeps, the accelerometer will be calibrated, and then the countdown to gyro calibration will start.
+If you want to force accelerometer re-calibration, press the `PCCA (SW4)` button during the gyro calibration countdown. Now the vario will start a 50 short beep countdown at a fast rate. At this point you should place the vario flat on a horizontal surface (confirm with a bubble level if possible) without any disturbance, vibrations etc. Do not hold or press down on the vario case. At the end of the 50 beeps, the accelerometer will be calibrated, and then the countdown to gyro calibration will start.
 
 ### Power/Bluetooth LED
 If Bluetooth transmission is disabled, the power/bluetooth LED will stay on.
@@ -136,12 +239,28 @@ If Bluetooth transmission is disabled, the power/bluetooth LED will stay on.
 If Bluetooth transmission is enabled, the power/bluetooth LED will start blinking once every 2 seconds after transmission starts.
 
 ### Audio Mute 
-When the vario has finished initialization and is providing vario audio feedback, a brief press of the `PCCA` button  will toggle the audio on / off.
+When the vario has finished initialization and is providing vario audio feedback, a brief press of the `PCCA (SW4)` button  will toggle the audio on / off.
 
 This is convenient if you have set the zero-tone threshold to a negative value or close to zero and don't want the distraction of a beeping vario while you are hooked in to the glider and waiting to launch.
 
 ## Power Off
-To power off, press the `PWR` button and hold (~2 seconds) until you hear a confirmation audio tone. If the power/bluetooth LED was on, it will turn off as well. Release.
+To power off, press the `PWR (SW3)` button and hold (~2 seconds) until you hear a confirmation audio tone. If the power/bluetooth LED was on, it will turn off as well. Release.
+
+# Notes on Calibration and Use
+The accelerometer offset calibration with the vario in a horizontal position needs to be done AFTER the board is installed in the case and BEFORE first use.
+
+Gyro offset calibration is done on each power up. For that the only requirement is that the unit should not be disturbed, it can be in any orientation.  If it is disturbed, it will use the previous saved gyro offsets. This will not be an issue  if you successfully calibrated the gyro in the past few days and are flying in similar temperature conditions.
+
+After offset calibration and in normal use the AHRS software computes the vario orientation in Earth coordinates and then the 
+net acceleration along the Earth coordinates +Z axis, every 2mS. This is NOT the IMU chip z axis acceleration. 
+
+So the vario does not have to be horizontal during use, you can mount it to your waist strap or riser.
+
+You will need to redo the accelerometer offset calibration if you have reinstalled the board in the case, or tightened/loosened the mounting screws. The stress from the mounting screws will translate to stress on the MEMS structures in the IMU chip soldered to the module board, which will change the axis offsets. 
+
+My friend who mounted the module board with a standard 0.1in header to the main PCB had very large accelerometer offsets. I was concerned that he had a defective MPU9250 chip. He reinstalled the IMU module board with double-sided foam tape and thin flexible wires, and then the offsets on all axes were very low.
+
+The accelerometer calibration will remove the offsets, but it's good to remove external contributing factors, especially if the offset is so large that it affects the dynamic range. 
 
 # Credits
 

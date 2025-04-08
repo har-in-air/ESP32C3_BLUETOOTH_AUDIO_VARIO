@@ -19,7 +19,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "1.00";
+const char* FwRevision = "1.01";
 
 MPU9250	Imu;
 MS5611	Baro;
