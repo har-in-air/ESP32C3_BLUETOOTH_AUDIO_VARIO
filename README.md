@@ -3,23 +3,24 @@
 <img src="docs/RevB_powered_on.jpg">
 
 
- Accurate, zero-lag audio variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
- This project uses the [KF4D kalman filter algorithm from the ESP32_IMU_GPS_BARO_VARIO project](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO/blob/master/offline/kf/compare_kf2_kf3_kf4.ipynb).
+ * Accurate, zero-lag audio variometer using Kalman filter fusion of accelerometer and pressure sensor data. 
+ This project uses the [KF4D kalman filter algorithm](https://github.com/har-in-air/ESP32_IMU_BARO_GPS_VARIO/blob/master/offline/kf/compare_kf2_kf3_kf4.ipynb).
 
- Other features :
 * WiFi Vario configuration via web page.
-* WiFi Over-the-air (OTA) firmware updates. 
 * Bluetooth LE transmission of [$LK8EX1 sentences](https://github.com/LK8000/LK8000/blob/master/Docs/LK8EX1.txt), to provide apps like [XCTrack](https://xctrack.org/) with 
 accurate barometric pressure altitude and climb-rate data.
 * Soft-switched power on/off.
 * 'No activity' time-out power down  to conserve battery life.
-* [2-layer PCB sized for standard Hammond 1551K enclosure](https://github.com/har-in-air/VhARIO-ESPC3).
+* WiFi Over-the-air (OTA) firmware updates.
+* [2-layer PCB layout available, sized for standard Hammond 1551K enclosure](https://github.com/har-in-air/VhARIO-ESPC3).
+  
 
 # Software Build Environment 
-* Ubuntu 20.04 LTS AMDx64
+* Ubuntu 24.04 LTS AMDx64
 * [Visual Studio Code with PlatformIO plugin using Arduino framework](https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/) 
 * The file `platformio.ini` specifies the framework packages, toolchain and libraries used by the project. 
 * LittleFS partition for hosting HTML web page content.
+* Since release 1.10, the software only supports PCB layout revision B.
 
 # Hardware
 
@@ -30,9 +31,7 @@ accurate barometric pressure altitude and climb-rate data.
 * 74HC240 used as a push-pull piezo driver for louder volume 
 * MCP73871 Li-poly battery charger, max 500mA charging current
 * 1800mAHr Lipoly battery
-* Hammond 1551K standard size enclosure (80 x 40 x 20mm). 
-* On Rev B hardware, the USB C interface supports Li-Poly battery charging and program flash/debug.
-On the Rev A hardware, the USB C interface only supports battery charging. An external USB-UART adapter is required for flash/debug operation.
+* The USB C interface supports Li-Poly battery charging and program flash/debug.
 
 ## Current Drain
 
@@ -43,29 +42,29 @@ With Bluetooth LE enabled and transmitting LK8EX1 messages at 10Hz, current drai
 # Software Build Notes
 
 ## Build Steps
-* Select `Rev A` or `Rev B` hardware configuration options in the platformio.ini file.
+
 * The first time you flash the ESP32-C3 with this project code, select `PROJECT TASKS -> esp32c3 -> Platform -> Erase Flash`. This will wipe the entire flash including any previous partition tables. 
 * Next, select `Platform -> Build Filesystem Image`. This will build a LittleFS flash partition with the contents of the `/data` directory. The `/data` directory contains the static HTML and CSS files for the WiFi server webpage.
+* Ensure the vario is switched off. 
+* Connect the USB cable from your PC to the vario. 
+* Press and hold the `PCCA (SW4)` button. 
+* Close the jumper or slide-switch (`JP1/SW2)` depending on which part you have installed. 
+* Release the `PCCA (SW4)` button. 
+* You will see the USB serial/jtag port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. Set this new port as the upload and monitor port in platformio.ini.
 * Next, select `Platform -> Upload Filesystem Image`. This will flash the LittleFS data partition to the ESP32-C3.
-* Next, select `General -> Clean All`, then `Build`. This is only required once, to download the source code for the required libraries and build them. 
-* If the libraries have already been downloaded and compiled, select `General -> Clean` to rebuild only the project application code.
+* Next, select `General -> Clean All`, then `Build`. This is only required once, to download the source code for the dependent libraries and build them. 
+* If the libraries have already been downloaded and compiled, select `General -> Clean` to re-build only the project application code.
+* Select `Build` to compile the application firmware binary. 
+* Open the jumper/slide switch (`JP1/SW2`) to remove power. 
+* Repeat the earlier steps with `PCCA (SW4)` and the jumper/slide switch  (`JP1/SW2`) to set up for flashing the application firmware.
+* Select `Upload` to flash the application firmware binary.
+* To see  serial debug prints and prompts on boot, open the  jumper/slide switch (`JP1/SW2`) to remove power. 
+* Select `Monitor` in Visual Studio Code and then switch on the vario using the `PWR (SW3)` button. Note that the
+serial port may change from the one used for upload e.g. from `ttyACM0` to `ttyACM1`.  
 
-`Rev A hardware`
-* Since the vario circuitry uses soft-switched power control, it helps to have a debug interface that includes both the serial port pins (RX,TX,GND) as well as the `PWR` button pins. Install a slide switch (`SW1`) or jumper (`JP1`) as per the schematic. 
-Ensure the vario is switched off. When you want to flash or erase the ESP32-C3, press and hold the `PCCA (SW4)` button. Now turn the slide switch (`SW1`) on or short the `JP1` jumper. Release the `PCCA (SW4)` button. 
-
-* Select `Build` and then `Upload and Monitor` to build and flash the application firmware binary. When done flashing, turn off the slide switch / open the jumper. Without this switch/jumper, you would have to keep the `PWR (SW3)` button pressed for the full duration of the erase & flash process. Note that this slide switch / jumper must be open for normal vario operation.
-
-* Ensure the serial debug monitor is visible, then reset or power-cycle the ESP32-C3 module. 
-
-`Rev B hardware`
-* Ensure the vario is switched off. Connect the USB cable from your PC to the vario. Press and hold the `PCCA (SW4)` button. Now close the jumper `JP1` or close the slide switch`SW2`. Release the `PCCA (SW4)` button. You will see the USB port show up as a new serial port. On Ubuntu it will be `/dev/ttyACMx` instead of `/dev/ttyUSBx`. Set this new port as the upload and monitor port in platformio.ini.
-
-* Select `Build` and then `Upload` to build and flash the application firmware binary.
-
-* To see  serial debug prints and prompts on boot, open the  jumper (`JP1`) / turn off the slide switch (`SW2`). Select `Monitor` in VSC and then switch on the vario using the `PWR (SW3)` button. Note that the
-serial port may change from the one used for upload e.g. from `ttyACM0` to `ttyACM1`.  Example serial
-terminal output in normal operation : 
+* After a full chip erase and firmware upload, there is no calibration data. So you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope. Once complete, the calibration parameters will be saved to flash.
+* [Example startup serial monitor output example after a full flash erase and build.](docs/first_boot_log.txt) 
+* Example serial terminal output for normal vario boot (post-caliibration) : 
 
 ```
 ESP-ROM:esp32c3-api1-20210207
@@ -168,10 +167,7 @@ crossoverCps = 400
 Bluetooth LE LK8EX1 messages @ 10Hz
 
 ```
-
-* For both Rev A and Rev B hardware : After a full chip erase and firmware upload, there is no calibration data. So you will see a calibration error message. Follow the prompts to calibrate both accelerometer and gyroscope. Once complete, the calibration parameters will be saved to flash.
-[This is a startup serial monitor log after a full flash erase, i.e. no calibration parameters.](docs/first_boot_log.txt) 
-* The gyroscope is re-calibrated each time on power-up. You should leave the vario un-disturbed when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process, it will use the last saved gyro calibration parameters.
+* The gyroscope is re-calibrated each time on power-up. You should leave the vario un-disturbed (in any orientation) when you hear the count-down beeps for gyroscope calibration. If the vario is disturbed during the gyro calibration process (e.g. you switched the vario on during flight), it will use the last saved gyro calibration parameters.
 
 
 # WiFi Configuration

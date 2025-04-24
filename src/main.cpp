@@ -19,7 +19,7 @@
 #include "ui.h"
 #include "ble_uart.h"
 
-const char* FwRevision = "1.01";
+const char* FwRevision = "1.10";
 
 MPU9250	Imu;
 MS5611	Baro;
@@ -84,14 +84,8 @@ void setup() {
 	wifi_off(); // turn off radio to save power
 
 #ifdef TOP_DEBUG   
-#ifdef HW_REV_B 
 	// Serial print redirected to USB CDC port (on Ubuntu, shows up as /dev/ttyACMx)
 	Serial.begin();
-#endif	
-#ifdef HW_REV_A 
-	// Serial print to uart port. Requires external USB-uart adapter (on Ubuntu, shows up as /dev/ttyUSBx)
-	Serial.begin(115200);
-#endif
 #endif
 
 	// PWR button needs to be pressed for one second to switch on
@@ -123,19 +117,19 @@ void setup() {
 			}
 		}
 
- setCpuFrequencyMhz(80);
-  uint32_t Freq = getCpuFrequencyMhz();
-  Serial.print("CPU Freq = ");
-  Serial.print(Freq);
-  Serial.println(" MHz");
-  Freq = getXtalFrequencyMhz();
-  Serial.print("XTAL Freq = ");
-  Serial.print(Freq);
-  Serial.println(" MHz");
-  Freq = getApbFrequency();
-  Serial.print("APB Freq = ");
-  Serial.print(Freq);
-  Serial.println(" Hz");		
+	setCpuFrequencyMhz(80);
+	uint32_t Freq = getCpuFrequencyMhz();
+	Serial.print("CPU Freq = ");
+	Serial.print(Freq);
+	Serial.println(" MHz");
+	Freq = getXtalFrequencyMhz();
+	Serial.print("XTAL Freq = ");
+	Serial.print(Freq);
+	Serial.println(" MHz");
+	Freq = getApbFrequency();
+	Serial.print("APB Freq = ");
+	Serial.print(Freq);
+	Serial.println(" Hz");		
    	
 	xTaskCreate( pwr_ctrl_task, "pwr_ctrl_task", 1024, NULL, PWR_CTRL_TASK_PRIORITY, NULL );
 	if (bWebConfigure == true) {
@@ -322,11 +316,11 @@ static void vario_task(void * pvParameter) {
 		// accelerometer samples (ax,ay,az) in milli-Gs, gyroscope samples (gx,gy,gz) in degrees/second
 		Imu.get_accel_gyro_data(accelmG, gyroDps); 
 #endif
-		// W.r.t. the CJMCU-117 board mounting on the VhARIO-ESPC3 PCB layout,
+		// For the CJMCU-117 IMU board orientation on the VhARIO-ESPC3 PCB layout,
 		// we arbitrarily decide that the CJMCU-117 board silkscreen -X points "forward" or "north", 
-		// silkscreen -Y points "right" or "east", and silkscreen +Z points down. This is the North-East-Down (NED) 
+		// silkscreen -Y points "right" or "east", and silkscreen +Z points down. This is our North-East-Down (NED) 
 		// right-handed coordinate frame used in the AHRS algorithm implementation.
-		// The mapping from sensor frame to NED frame is : 
+		// Then the mapping from IMU sensor frame to NED frame is : 
 		// gn = gx, ge = -gy, gd = gz  : clockwise rotations about the + ned axis must result in +ve readings
 		// an = ax, ae = ay, ad = -az   : when the + ned axis points down, axis reading must be +ve max
 		// mn = -my, me = -mx, md = -mz   : when the + ned axis points magnetic north, axis reading must be +ve max
