@@ -20,7 +20,7 @@ accurate barometric pressure altitude and climb-rate data.
 * [Visual Studio Code with PlatformIO plugin using Arduino framework](https://randomnerdtutorials.com/vs-code-platformio-ide-esp32-esp8266-arduino/) 
 * The file `platformio.ini` specifies the framework packages, toolchain and libraries used by the project. 
 * LittleFS partition for hosting HTML web page content.
-* Since release 1.10, the software only supports PCB layout revision B.
+* Since release v1.20, the software only supports PCB layout revision B.
 
 # Hardware
 
